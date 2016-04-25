@@ -728,7 +728,9 @@ public class Stubs {
     int count = 1;
     int size = method.parameters().size();
     for (ParameterInfo param : method.parameters()) {
-      stream.print(comma + fullParameterTypeName(method, param.type(), count == size) + " "
+      stream.print(comma);
+      writeAnnotations(stream, param.annotations(), false);
+      stream.print(fullParameterTypeName(method, param.type(), count == size) + " "
           + param.name());
       comma = ", ";
       count++;
@@ -1607,9 +1609,7 @@ public class Stubs {
 
   static void writeConstructorKeepList(PrintStream keepListWriter, MethodInfo mi) {
     keepListWriter.print("    ");
-    String name = mi.name();
-    name = name.replace(".", "$");
-    keepListWriter.print(name);
+    keepListWriter.print("<init>");
 
     writeParametersKeepList(keepListWriter, mi, mi.parameters());
     keepListWriter.print(";\n");

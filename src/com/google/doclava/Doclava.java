@@ -44,7 +44,7 @@ public class Doclava {
   private static final String SDK_CONSTANT_TYPE_BROADCAST_ACTION =
       "android.annotation.SdkConstant.SdkConstantType.BROADCAST_INTENT_ACTION";
   private static final String SDK_CONSTANT_TYPE_SERVICE_ACTION =
-      "android.annotation.SdkConstant.SdkConstantType.SERVICE_INTENT_ACTION";
+      "android.annotation.SdkConstant.SdkConstantType.SERVICE_ACTION";
   private static final String SDK_CONSTANT_TYPE_CATEGORY =
       "android.annotation.SdkConstant.SdkConstantType.INTENT_CATEGORY";
   private static final String SDK_CONSTANT_TYPE_FEATURE =
@@ -68,7 +68,10 @@ public class Doclava {
   public static final boolean SORT_BY_NAV_GROUPS = true;
   /* Debug output for PageMetadata, format urls from site root */
   public static boolean META_DBG=false;
-
+  /* Remove after updated templates are launched */
+  public static boolean USE_UPDATED_TEMPLATES = false;
+  /* Show Preview navigation and process preview docs */
+  public static boolean INCLUDE_PREVIEW = false;
   public static String outputPathBase = "/";
   public static ArrayList<String> inputPathHtmlDirs = new ArrayList<String>();
   public static ArrayList<String> inputPathHtmlDir2 = new ArrayList<String>();
@@ -99,6 +102,7 @@ public class Doclava {
   public static boolean documentAnnotations = false;
   public static String documentAnnotationsPath = null;
   public static Map<String, String> annotationDocumentationMap = null;
+  public static boolean referenceOnly = false;
 
   public static JSilver jSilver = null;
 
@@ -166,7 +170,12 @@ public class Doclava {
       if (a[0].equals("-d")) {
         outputPathBase = outputPathHtmlDirs = ClearPage.outputDir = a[1];
       } else if (a[0].equals("-templatedir")) {
-        ClearPage.addTemplateDir(a[1]);
+        if (USE_UPDATED_TEMPLATES) {
+          /* remove with updated templates are launched */
+          ClearPage.addTemplateDir("build/tools/droiddoc/templates-sdk-dev");
+        } else {
+          ClearPage.addTemplateDir(a[1]);
+        }
       } else if (a[0].equals("-hdf")) {
         mHDFData.add(new String[] {a[1], a[2]});
       } else if (a[0].equals("-knowntags")) {
@@ -260,6 +269,10 @@ public class Doclava {
         offlineMode = true;
       } else if (a[0].equals("-metadataDebug")) {
         META_DBG = true;
+      } else if (a[0].equals("-useUpdatedTemplates")) {
+        USE_UPDATED_TEMPLATES = true;
+      } else if (a[0].equals("-includePreview")) {
+        INCLUDE_PREVIEW = true;
       } else if (a[0].equals("-federate")) {
         try {
           String name = a[1];
@@ -282,6 +295,9 @@ public class Doclava {
       } else if (a[0].equals("-documentannotations")) {
         documentAnnotations = true;
         documentAnnotationsPath = a[1];
+      } else if (a[0].equals("-referenceonly")) {
+        referenceOnly = true;
+        mHDFData.add(new String[] {"referenceonly", "1"});
       }
     }
 
@@ -332,26 +348,28 @@ public class Doclava {
         TodoFile.writeTodoFile(todoFile);
       }
 
-  if (samplesRef) {
+      if (samplesRef) {
         // always write samples without offlineMode behaviors
-  writeSamples(false, sampleCodes, SORT_BY_NAV_GROUPS);
-  }
-
-      // HTML2 Pages -- Generate Pages from optional secondary dir
-      if (!inputPathHtmlDir2.isEmpty()) {
-        if (!outputPathHtmlDir2.isEmpty()) {
-          ClearPage.outputDir = outputPathBase + "/" + outputPathHtmlDir2;
-        }
-        ClearPage.htmlDirs = inputPathHtmlDir2;
-        writeHTMLPages();
-        ClearPage.htmlDirs = inputPathHtmlDirs;
+        writeSamples(false, sampleCodes, SORT_BY_NAV_GROUPS);
       }
 
-      // HTML Pages
-      if (!ClearPage.htmlDirs.isEmpty()) {
-        ClearPage.htmlDirs = inputPathHtmlDirs;
-        ClearPage.outputDir = outputPathHtmlDirs;
-        writeHTMLPages();
+      if (!referenceOnly) {
+        // HTML2 Pages -- Generate Pages from optional secondary dir
+        if (!inputPathHtmlDir2.isEmpty()) {
+          if (!outputPathHtmlDir2.isEmpty()) {
+            ClearPage.outputDir = outputPathBase + "/" + outputPathHtmlDir2;
+          }
+          ClearPage.htmlDirs = inputPathHtmlDir2;
+          writeHTMLPages();
+          ClearPage.htmlDirs = inputPathHtmlDirs;
+        }
+
+        // HTML Pages
+        if (!ClearPage.htmlDirs.isEmpty()) {
+          ClearPage.htmlDirs = inputPathHtmlDirs;
+          ClearPage.outputDir = outputPathHtmlDirs;
+          writeHTMLPages();
+        }
       }
 
       writeAssets();
@@ -395,7 +413,11 @@ public class Doclava {
   }
       // Write metadata for all processed files to jd_lists_unified.js in out dir
       if (!sTaglist.isEmpty()) {
-        PageMetadata.WriteList(sTaglist);
+        if (USE_UPDATED_TEMPLATES) {
+          PageMetadata.WriteListByLang(sTaglist);
+        } else {
+          PageMetadata.WriteList(sTaglist);
+        }
       }
     }
 
@@ -675,8 +697,17 @@ public class Doclava {
     if (option.equals("-metadataDebug")) {
       return 1;
     }
+    if (option.equals("-useUpdatedTemplates")) {
+      return 1;
+    }
+    if (option.equals("-includePreview")) {
+      return 1;
+    }
     if (option.equals("-documentannotations")) {
       return 2;
+    }
+    if (option.equals("-referenceonly")) {
+      return 1;
     }
     return 0;
   }
@@ -799,18 +830,19 @@ public class Doclava {
         String templ = relative + f.getName();
         int len = templ.length();
         if (len > 3 && ".cs".equals(templ.substring(len - 3))) {
-          Data data = makeHDF();
+          Data data = makePackageHDF();
           String filename = templ.substring(0, len - 3) + htmlExtension;
           ClearPage.write(data, templ, filename, js);
         } else if (len > 3 && ".jd".equals(templ.substring(len - 3))) {
-          Data data = makeHDF();
+          Data data = makePackageHDF();
           String filename = templ.substring(0, len - 3) + htmlExtension;
           DocFile.writePage(f.getAbsolutePath(), relative, filename, data);
         } else if(!f.getName().equals(".DS_Store")){
               Data data = makeHDF();
               String hdfValue = data.getValue("sac") == null ? "" : data.getValue("sac");
               boolean allowExcepted = hdfValue.equals("true") ? true : false;
-              ClearPage.copyFile(allowExcepted, f, templ);
+              boolean append = false;
+              ClearPage.copyFile(allowExcepted, f, templ, append);
         }
       } else if (f.isDirectory()) {
         writeDirectory(f, relative + f.getName() + "/", js);
