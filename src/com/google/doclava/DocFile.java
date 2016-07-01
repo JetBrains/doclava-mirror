@@ -12,6 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
 package com.google.doclava;
@@ -236,6 +237,10 @@ public class DocFile {
             hdf.setValue("instantapps", "true");
             hdf.setValue("page.type", "develop");
             hdf.setValue("page.category", "instant apps");
+          } else if (filename.indexOf("topic/performance") == 0) {
+            hdf.setValue("perf", "true");
+            hdf.setValue("page.type", "develop");
+            hdf.setValue("page.category", "performance");
           }
         } else if (filename.indexOf("distribute") == 0) {
           hdf.setValue("distribute", "true");
@@ -423,6 +428,10 @@ public class DocFile {
             hdf.setValue("instantapps", "true");
             hdf.setValue("page.type", "develop");
             hdf.setValue("page.category", "instant apps");
+          } else if (filename.indexOf("topic/performance") == 0) {
+            hdf.setValue("perf", "true");
+            hdf.setValue("page.type", "develop");
+            hdf.setValue("page.category", "performance");
           }
         } else if (filename.indexOf("wear/preview") == 0) {
           hdf.setValue("wearpreview", "true");
