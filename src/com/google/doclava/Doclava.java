@@ -115,6 +115,8 @@ public class Doclava {
   public static String testSupportPath = "android/support/test/";
   public static boolean wearableSupportRef = false;
   public static String wearableSupportPath = "android/support/wearable/";
+  public static boolean androidSupportRef = false;
+  public static String androidSupportPath = "android/support/";
   private static boolean samplesRef = false;
   private static boolean sac = false;
 
@@ -711,6 +713,10 @@ public class Doclava {
       wearableSupportRef = true;
       return 1;
     }
+    if (option.equals("-androidSupportRef")) {
+      androidSupportRef = true;
+      return 1;
+    }
     if (option.equals("-metadataDebug")) {
       return 1;
     }
@@ -828,6 +834,8 @@ public class Doclava {
           data.setValue("reference.testSupport", "true");
       } else if(wearableSupportRef){
           data.setValue("reference.wearableSupport", "true");
+      } else if(androidSupportRef){
+          data.setValue("reference.androidSupport", "true");
       }
       data.setValue("reference", "1");
       data.setValue("reference.apilevels", sinceTagger.hasVersions() ? "1" : "0");
@@ -949,6 +957,9 @@ public class Doclava {
       } else if (wearableSupportRef) {
         listDir = listDir + wearableSupportPath;
         data.setValue("reference.wearableSupport", "true");
+      } else if (androidSupportRef) {
+        listDir = listDir + androidSupportPath;
+        data.setValue("reference.androidSupport", "true");
       }
     }
     for (String s : sorted.keySet()) {
