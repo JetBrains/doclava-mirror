@@ -241,6 +241,10 @@ public class DocFile {
             hdf.setValue("perf", "true");
             hdf.setValue("page.type", "develop");
             hdf.setValue("page.category", "performance");
+          } else if (filename.indexOf("topic/arc") == 0) {
+            hdf.setValue("arc", "true");
+            hdf.setValue("page.type", "develop");
+            hdf.setValue("page.category", "arc");
           }
         } else if (filename.indexOf("distribute") == 0) {
           hdf.setValue("distribute", "true");
@@ -432,6 +436,10 @@ public class DocFile {
             hdf.setValue("perf", "true");
             hdf.setValue("page.type", "develop");
             hdf.setValue("page.category", "performance");
+          } else if (filename.indexOf("topic/arc") == 0) {
+            hdf.setValue("arc", "true");
+            hdf.setValue("page.type", "develop");
+            hdf.setValue("page.category", "arc");
           }
         } else if (filename.indexOf("wear/preview") == 0) {
           hdf.setValue("wearpreview", "true");
