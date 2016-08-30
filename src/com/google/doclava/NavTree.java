@@ -117,35 +117,39 @@ public class NavTree {
       } else if (o instanceof ClassInfo) {
         ClassInfo cl = (ClassInfo) o;
 
-       // skip classes that are the child of another class, recursion will handle those.
-       if (cl.containingClass() == null){
+        // skip classes that are the child of another class, recursion will handle those.
+        if (cl.containingClass() == null) {
 
-         data.setValue("docs.pages." + i + ".id", "" + i);
-         data = makeYamlHDF(cl, "docs.pages."+i, data);
-       }
-     }
+          data.setValue("docs.pages." + i + ".id", "" + i);
+          data = makeYamlHDF(cl, "docs.pages."+i, data);
+        }
+      }
 
-     i++;
-   }
-   return data;
- }
+      i++;
+    }
+    return data;
+  }
 
- public static Data makeYamlHDF(ClassInfo cl, String base, Data data) {
-   data.setValue(base + ".label", cl.name());
-   data.setValue(base + ".shortname", cl.name().substring(cl.name().lastIndexOf(".")+1));
-   data.setValue(base + ".link", cl.htmlPage());
-   data.setValue(base + ".type", cl.kind());
+  public static Data makeYamlHDF(ClassInfo cl, String base, Data data) {
+    data.setValue(base + ".label", cl.name());
+    data.setValue(base + ".shortname", cl.name().substring(cl.name().lastIndexOf(".")+1));
+    data.setValue(base + ".link", cl.htmlPage());
+    data.setValue(base + ".type", cl.kind());
 
-   if (cl.innerClasses().size() > 0){
-     int j = 0;
-     for (ClassInfo cl2 : cl.innerClasses()){
-       data = makeYamlHDF(cl2, base + ".children." + j, data);
-       j++;
-     }
-   }
+    if (cl.innerClasses().size() > 0) {
+      int j = 0;
+      for (ClassInfo cl2 : cl.innerClasses()) {
+        if (cl2.isHiddenOrRemoved()) {
+          continue;
+        }
+        data = makeYamlHDF(cl2, base + ".children." + j, data);
+        j++;
+      }
+    }
 
     return data;
   }
+
   private static Node makePackageNode(PackageInfo pkg) {
     List<Node> children = new ArrayList<Node>();
 
