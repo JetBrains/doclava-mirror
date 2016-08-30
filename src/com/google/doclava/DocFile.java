@@ -298,11 +298,6 @@ public class DocFile {
           hdf.setValue("wearpreview", "true");
           hdf.setValue("page.type", "about");
           hdf.setValue("page.category", "wear preview");
-        } else if ((filename.indexOf("tools") == 0) || (filename.indexOf("sdk") == 0)) {
-          hdf.setValue("tools", "true");
-          hdf.setValue("page.type", "develop");
-          hdf.setValue("page.category", "tools");
-          fromTemplate = hdf.getValue("page.template", "");
         } else if (filename.indexOf("devices") == 0) {
           hdf.setValue("devices", "true");
           hdf.setValue("page.type", "devices");
@@ -335,29 +330,6 @@ public class DocFile {
           hdf.setValue("about", "true");
           hdf.setValue("page.type", "about");
           hdf.setValue("page.category", "tv");
-        } else if (filename.indexOf("ndk") == 0) {
-          hdf.setValue("ndk", "true");
-          hdf.setValue("page.type", "ndk");
-          hdf.setValue("page.category", "ndk");
-          if (filename.indexOf("ndk/guides") == 0) {
-            hdf.setValue("guide", "true");
-            hdf.setValue("page.type", "ndk");
-            hdf.setValue("page.category", "guide");
-          } else if (filename.indexOf("ndk/reference") == 0) {
-            hdf.setValue("reference", "true");
-            hdf.setValue("page.type", "ndk");
-            hdf.setValue("page.category", "reference");
-          } else if (filename.indexOf("ndk/samples") == 0) {
-            hdf.setValue("samples", "true");
-            hdf.setValue("page.type", "ndk");
-            hdf.setValue("page.category", "samples");
-            hdf.setValue("samplesDocPage", "true");
-          } else if (filename.indexOf("ndk/downloads") == 0) {
-            hdf.setValue("downloads", "true");
-            hdf.setValue("page.type", "ndk");
-            hdf.setValue("page.category", "downloads");
-            fromTemplate = hdf.getValue("page.template", "");
-          }
         }
       } else {
         //support the old mappings
@@ -408,10 +380,6 @@ public class DocFile {
         } else if (filename.indexOf("about") == 0) {
           hdf.setValue("about", "true");
           hdf.setValue("page.type", "about");
-        } else if ((filename.indexOf("tools") == 0) || (filename.indexOf("sdk") == 0)) {
-          hdf.setValue("tools", "true");
-          hdf.setValue("page.type", "tools");
-          fromTemplate = hdf.getValue("page.template", "");
         } else if (filename.indexOf("devices") == 0) {
           hdf.setValue("devices", "true");
           hdf.setValue("page.type", "devices");
@@ -459,20 +427,6 @@ public class DocFile {
           hdf.setValue("auto", "true");
         } else if (filename.indexOf("tv") == 0) {
           hdf.setValue("tv", "true");
-        } else if (filename.indexOf("ndk") == 0) {
-          hdf.setValue("ndk", "true");
-          hdf.setValue("page.type", "ndk");
-          if (filename.indexOf("ndk/guides") == 0) {
-            hdf.setValue("guide", "true");
-          } else if (filename.indexOf("ndk/reference") == 0) {
-            hdf.setValue("reference", "true");
-          } else if (filename.indexOf("ndk/samples") == 0) {
-            hdf.setValue("samples", "true");
-            hdf.setValue("samplesDocPage", "true");
-          } else if (filename.indexOf("ndk/downloads") == 0) {
-            hdf.setValue("downloads", "true");
-            fromTemplate = hdf.getValue("page.template", "");
-          }
         }
       }
       //set metadata for this file in jd_lists_unified
@@ -483,11 +437,7 @@ public class DocFile {
         outfile = outfile.replaceFirst("^intl/", "");
       }
 
-      if (fromTemplate.equals("sdk")) {
-        ClearPage.write(hdf, "sdkpage.cs", outfile);
-      } else {
-        ClearPage.write(hdf, "docpage.cs", outfile);
-      }
+      ClearPage.write(hdf, "docpage.cs", outfile);
     }
   } // writePage
 }
