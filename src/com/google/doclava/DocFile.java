@@ -330,6 +330,10 @@ public class DocFile {
           hdf.setValue("about", "true");
           hdf.setValue("page.type", "about");
           hdf.setValue("page.category", "tv");
+        } else {
+          hdf.setValue("about", "true");
+          hdf.setValue("page.type", "about");
+          hdf.setValue("page.category", "about");
         }
       } else {
         //support the old mappings
@@ -427,6 +431,10 @@ public class DocFile {
           hdf.setValue("auto", "true");
         } else if (filename.indexOf("tv") == 0) {
           hdf.setValue("tv", "true");
+        } else {
+          hdf.setValue("about", "true");
+          hdf.setValue("page.type", "about");
+          hdf.setValue("page.category", "about");
         }
       }
       //set metadata for this file in jd_lists_unified
