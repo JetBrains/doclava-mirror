@@ -181,11 +181,7 @@ public class PageMetadata {
       pageMeta.setLang(getLangStringNormalized(hdf, filename));
       pageMeta.setType(getStringValueNormalized(hdf, "page.type"));
       pageMeta.setTimestamp(hdf.getValue("page.timestamp",""));
-      if (Doclava.USE_UPDATED_TEMPLATES) {
-        appendMetaNodeByLang(pageMeta, tagList);
-      } else {
-        appendMetaNodeByType(pageMeta, tagList);
-      }
+      appendMetaNodeByLang(pageMeta, tagList);
     }
   }
 

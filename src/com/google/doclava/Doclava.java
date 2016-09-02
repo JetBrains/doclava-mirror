@@ -72,8 +72,6 @@ public class Doclava {
   public static boolean DEVSITE_STATIC_ONLY = false;
   /* Don't resolve @link refs found in devsite pages */
   public static boolean DEVSITE_IGNORE_JDLINKS = false;
-  /* Remove after updated templates are launched */
-  public static boolean USE_UPDATED_TEMPLATES = false;
   /* Show Preview navigation and process preview docs */
   public static boolean INCLUDE_PREVIEW = false;
   /* output en, es, ja without parent intl/ container */
@@ -182,12 +180,7 @@ public class Doclava {
       if (a[0].equals("-d")) {
         outputPathBase = outputPathHtmlDirs = ClearPage.outputDir = a[1];
       } else if (a[0].equals("-templatedir")) {
-        if (USE_UPDATED_TEMPLATES) {
-          /* remove with updated templates are launched */
-          ClearPage.addTemplateDir("build/tools/droiddoc/templates-sdk-dev");
-        } else {
-          ClearPage.addTemplateDir(a[1]);
-        }
+        ClearPage.addTemplateDir(a[1]);
       } else if (a[0].equals("-hdf")) {
         mHDFData.add(new String[] {a[1], a[2]});
       } else if (a[0].equals("-knowntags")) {
@@ -281,8 +274,6 @@ public class Doclava {
         offlineMode = true;
       } else if (a[0].equals("-metadataDebug")) {
         META_DBG = true;
-      } else if (a[0].equals("-useUpdatedTemplates")) {
-        USE_UPDATED_TEMPLATES = true;
       } else if (a[0].equals("-includePreview")) {
         INCLUDE_PREVIEW = true;
       } else if (a[0].equals("-ignoreJdLinks")) {
@@ -317,7 +308,6 @@ public class Doclava {
         // Don't copy the doclava assets to devsite output (ie use proj assets only)
         includeDefaultAssets = false;
         USE_DEVSITE_LOCALE_OUTPUT_PATHS = true;
-        USE_UPDATED_TEMPLATES = true;
         mHDFData.add(new String[] {"devsite", "1"});
         if (staticOnly) {
           DEVSITE_STATIC_ONLY = true;
@@ -446,11 +436,7 @@ public class Doclava {
       }
       // Write metadata for all processed files to jd_lists_unified.js in out dir
       if (!sTaglist.isEmpty()) {
-        if (USE_UPDATED_TEMPLATES) {
-          PageMetadata.WriteListByLang(sTaglist);
-        } else {
-          PageMetadata.WriteList(sTaglist);
-        }
+        PageMetadata.WriteListByLang(sTaglist);
       }
     }
 
@@ -736,9 +722,6 @@ public class Doclava {
       return 1;
     }
     if (option.equals("-metadataDebug")) {
-      return 1;
-    }
-    if (option.equals("-useUpdatedTemplates")) {
       return 1;
     }
     if (option.equals("-includePreview")) {
