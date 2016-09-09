@@ -94,6 +94,8 @@ public class NavTree {
       dir = Doclava.ensureSlash(dir) + Doclava.wearableSupportPath;
     } else if ((Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS) && (Doclava.androidSupportRef)) {
       dir = Doclava.ensureSlash(dir) + Doclava.androidSupportPath;
+    } else if ((Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS) && (Doclava.constraintSupportRef)) {
+      dir = Doclava.ensureSlash(dir) + Doclava.constraintSupportRef;
     }
     ClearPage.write(data, "yaml_navtree.cs", Doclava.ensureSlash(dir) + fileName);
   }

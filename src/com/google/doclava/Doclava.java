@@ -83,6 +83,7 @@ public class Doclava {
   public static String outputPathBase = "/";
   public static ArrayList<String> inputPathHtmlDirs = new ArrayList<String>();
   public static ArrayList<String> inputPathHtmlDir2 = new ArrayList<String>();
+  public static String inputPathResourcesDir;
   public static String outputPathHtmlDirs;
   public static String outputPathHtmlDir2;
 
@@ -124,6 +125,8 @@ public class Doclava {
   public static String wearableSupportPath = "android/support/wearable/";
   public static boolean androidSupportRef = false;
   public static String androidSupportPath = "android/support/";
+  public static boolean constraintSupportRef = false;
+  public static String constraintSupportPath = "android/support/constraint/";
   private static boolean samplesRef = false;
   private static boolean sac = false;
 
@@ -211,6 +214,9 @@ public class Doclava {
           inputPathHtmlDir2.add(a[1]);
           outputPathHtmlDir2 = a[2];
         }
+      //the destination output path for additional resources (images)
+      } else if (a[0].equals("-resourcesdir")) {
+        inputPathResourcesDir = a[1];
       } else if (a[0].equals("-title")) {
         Doclava.title = a[1];
       } else if (a[0].equals("-werror")) {
@@ -411,6 +417,8 @@ public class Doclava {
           writeHTMLPages();
         }
       }
+
+      writeResources();
 
       writeAssets();
 
@@ -639,6 +647,9 @@ public class Doclava {
     if (option.equals("-htmldir2")) {
       return 3;
     }
+    if (option.equals("-resourcesdir")) {
+      return 2;
+    }
     if (option.equals("-title")) {
       return 2;
     }
@@ -747,6 +758,9 @@ public class Doclava {
     }
     if (option.equals("-androidSupportRef")) {
       androidSupportRef = true;
+    }
+    if (option.equals("-constraintSupportRef")) {
+      constraintSupportRef = true;
       return 1;
     }
     if (option.equals("-metadataDebug")) {
@@ -874,6 +888,8 @@ public class Doclava {
           data.setValue("reference.wearableSupport", "true");
       } else if(androidSupportRef){
           data.setValue("reference.androidSupport", "true");
+      } else if(constraintSupportRef){
+          data.setValue("reference.constraintSupport", "true");
       }
       data.setValue("reference", "1");
       data.setValue("reference.apilevels", sinceTagger.hasVersions() ? "1" : "0");
@@ -928,6 +944,25 @@ public class Doclava {
       ResourceLoader loader = new FileSystemResourceLoader(f);
       JSilver js = new JSilver(loader);
       writeDirectory(f, "", js);
+    }
+  }
+
+  /* copy files supplied by the -resourcesdir flag */
+  public static void writeResources() {
+    if (inputPathResourcesDir != null && !inputPathResourcesDir.isEmpty()) {
+      try {
+        File f = new File(inputPathResourcesDir);
+        if (!f.isDirectory()) {
+          System.err.println("resourcesdir is not a directory: " + inputPathResourcesDir);
+          return;
+        }
+
+        ResourceLoader loader = new FileSystemResourceLoader(f);
+        JSilver js = new JSilver(loader);
+        writeDirectory(f, "resources/", js);
+      } catch(Exception e) {
+        System.err.println("Could not copy resourcesdir: " + e);
+      }
     }
   }
 
@@ -998,6 +1033,9 @@ public class Doclava {
       } else if (androidSupportRef) {
         listDir = listDir + androidSupportPath;
         data.setValue("reference.androidSupport", "true");
+      } else if (constraintSupportRef) {
+        listDir = listDir + androidSupportPath;
+        data.setValue("reference.constraintSupport", "true");
       }
     }
     for (String s : sorted.keySet()) {
