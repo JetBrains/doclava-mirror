@@ -76,6 +76,10 @@ public class Doclava {
   public static boolean INCLUDE_PREVIEW = false;
   /* output en, es, ja without parent intl/ container */
   public static boolean USE_DEVSITE_LOCALE_OUTPUT_PATHS = false;
+  /* generate navtree.js without other docs */
+  public static boolean NAVTREE_ONLY = false;
+  /* Generate reference navtree.js with all inherited members */
+  public static boolean AT_LINKS_NAVTREE = false;
   public static String outputPathBase = "/";
   public static ArrayList<String> inputPathHtmlDirs = new ArrayList<String>();
   public static ArrayList<String> inputPathHtmlDir2 = new ArrayList<String>();
@@ -304,6 +308,10 @@ public class Doclava {
       } else if (a[0].equals("-staticonly")) {
         staticOnly = true;
         mHDFData.add(new String[] {"staticonly", "1"});
+      } else if (a[0].equals("-navtreeonly")) {
+        NAVTREE_ONLY = true;
+      } else if (a[0].equals("-atLinksNavtree")) {
+        AT_LINKS_NAVTREE = true;
       } else if (a[0].equals("-devsite")) {
         // Don't copy the doclava assets to devsite output (ie use proj assets only)
         includeDefaultAssets = false;
@@ -346,6 +354,16 @@ public class Doclava {
 
       if (!Doclava.readTemplateSettings()) {
         return false;
+      }
+
+      // if requested, only generate the navtree for ds use-case
+      if (NAVTREE_ONLY) {
+        if (AT_LINKS_NAVTREE) {
+          AtLinksNavTree.writeAtLinksNavTree(javadocDir);
+        } else {
+          NavTree.writeNavTree(javadocDir, "");
+        }
+        return true;
       }
 
       // don't do ref doc tasks in devsite static-only builds
@@ -734,6 +752,12 @@ public class Doclava {
       return 1;
     }
     if (option.equals("-staticonly")) {
+      return 1;
+    }
+    if (option.equals("-navtreeonly")) {
+      return 1;
+    }
+    if (option.equals("-atLinksNavtree")) {
       return 1;
     }
     return 0;
