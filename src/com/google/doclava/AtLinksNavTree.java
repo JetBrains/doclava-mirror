@@ -81,21 +81,23 @@ public class AtLinksNavTree {
   private static void addPackages(StringBuilder buf, PackageInfo[] packages) {
     boolean is_first_package = true;
     for (PackageInfo pkg : Doclava.choosePackages()) {
-      if (!is_first_package) {
-        buf.append(",");
+      if (!pkg.name().contains(".internal.")) {
+        if (!is_first_package) {
+          buf.append(",");
+        }
+        buf.append("\n  \"" + pkg.name() + "\": {");
+
+        boolean is_first_class = true;
+        is_first_class = addClasses(buf, pkg.annotations(), is_first_class);
+        is_first_class = addClasses(buf, pkg.interfaces(), is_first_class);
+        is_first_class = addClasses(buf, pkg.ordinaryClasses(), is_first_class);
+        is_first_class = addClasses(buf, pkg.enums(), is_first_class);
+        is_first_class = addClasses(buf, pkg.exceptions(), is_first_class);
+        addClasses(buf, pkg.errors(), is_first_class);
+
+        buf.append("\n  }");
+        is_first_package = false;
       }
-      buf.append("\n  \"" + pkg.name() + "\": {");
-
-      boolean is_first_class = true;
-      is_first_class = addClasses(buf, pkg.annotations(), is_first_class);
-      is_first_class = addClasses(buf, pkg.interfaces(), is_first_class);
-      is_first_class = addClasses(buf, pkg.ordinaryClasses(), is_first_class);
-      is_first_class = addClasses(buf, pkg.enums(), is_first_class);
-      is_first_class = addClasses(buf, pkg.exceptions(), is_first_class);
-      addClasses(buf, pkg.errors(), is_first_class);
-
-      buf.append("\n  }");
-      is_first_package = false;
     }
   }
 
@@ -110,20 +112,18 @@ public class AtLinksNavTree {
   private static boolean addClasses(StringBuilder buf, ClassInfo[] classes,
       boolean is_first_class) {
     for (ClassInfo cl : classes) {
-      if (cl.checkLevel() && !cl.isHidden()) {
-        if (!is_first_class) {
-          buf.append(",");
-        }
-        buf.append("\n    \"" + cl.name() + "\": {");
-
-        boolean is_first_member = true;
-        is_first_member = addFields(buf, cl.fields(), is_first_member, cl);
-        is_first_member = addMethods(buf, cl.constructors(), is_first_member, cl);
-        addMethods(buf, cl.methods(), is_first_member, cl);
-
-        buf.append("\n    }");
-        is_first_class = false;
+      if (!is_first_class) {
+        buf.append(",");
       }
+      buf.append("\n    \"" + cl.name() + "\": {");
+
+      boolean is_first_member = true;
+      is_first_member = addFields(buf, cl.fields(), is_first_member, cl);
+      is_first_member = addMethods(buf, cl.constructors(), is_first_member, cl);
+      addMethods(buf, cl.methods(), is_first_member, cl);
+
+      buf.append("\n    }");
+      is_first_class = false;
     }
     return is_first_class;
   }
@@ -140,15 +140,17 @@ public class AtLinksNavTree {
   private static boolean addFields(StringBuilder buf, ArrayList<FieldInfo> fields,
       boolean is_first_member, ClassInfo cl) {
     for (FieldInfo field : fields) {
-      if (!is_first_member) {
-        buf.append(",");
+      if (!field.containingClass().qualifiedName().contains(".internal.")) {
+        if (!is_first_member) {
+          buf.append(",");
+        }
+        buf.append("\n      \"" + field.name() + "\": \"");
+        if (!field.containingClass().qualifiedName().equals(cl.qualifiedName())) {
+          buf.append(field.containingClass().qualifiedName());
+        }
+        buf.append("\"");
+        is_first_member = false;
       }
-      buf.append("\n      \"" + field.name() + "\": \"");
-      if (!field.containingClass().qualifiedName().equals(cl.qualifiedName())) {
-        buf.append(field.containingClass().qualifiedName());
-      }
-      buf.append("\"");
-      is_first_member = false;
     }
     return is_first_member;
   }
@@ -165,15 +167,17 @@ public class AtLinksNavTree {
   private static boolean addMethods(StringBuilder buf, ArrayList<MethodInfo> methods,
       boolean is_first_member, ClassInfo cl) {
     for (MethodInfo method : methods) {
-      if (!is_first_member) {
-        buf.append(",");
+      if (!method.containingClass().qualifiedName().contains(".internal.")) {
+        if (!is_first_member) {
+          buf.append(",");
+        }
+        buf.append("\n      \"" + method.name() + method.signature() + "\": \"");
+        if (!method.containingClass().qualifiedName().equals(cl.qualifiedName())) {
+          buf.append(method.containingClass().qualifiedName());
+        }
+        buf.append("\"");
+        is_first_member = false;
       }
-      buf.append("\n      \"" + method.name() + method.signature() + "\": \"");
-      if (!method.containingClass().qualifiedName().equals(cl.qualifiedName())) {
-        buf.append(method.containingClass().qualifiedName());
-      }
-      buf.append("\"");
-      is_first_member = false;
     }
     return is_first_member;
   }
