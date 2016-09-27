@@ -263,6 +263,7 @@ public class PageMetadata {
             XPathConstants.NODESET);
         if (imgNodes.getLength() > 0) {
           imageUrl = imgNodes.item(0).getNodeValue();
+          imageUrl = getImageUrlNormalized(imageUrl);
           imgFrom = "itemprop";
         } else {
           XPathExpression FirstImgExpr = xpath.compile("//img/@src");
