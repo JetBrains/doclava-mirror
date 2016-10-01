@@ -452,9 +452,13 @@ public class Doclava {
           writeSdkValues(sdkValuePath);
         }
       }
-      // Write metadata for all processed files to jd_lists_unified.js in out dir
+      // Write metadata for all processed files to jd_lists_unified in out dir
       if (!sTaglist.isEmpty()) {
         PageMetadata.WriteListByLang(sTaglist);
+        // For devsite (ds) reference only, write samples_metadata to out dir
+        if ((USE_DEVSITE_LOCALE_OUTPUT_PATHS) && (!DEVSITE_STATIC_ONLY)) {
+          PageMetadata.WriteSamplesListByLang(sTaglist);
+        }
       }
     }
 
