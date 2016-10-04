@@ -166,11 +166,13 @@ class ApiFile {
     name = token;
     qname = qualifiedName(pkg.name(), name, null);
     final TypeInfo typeInfo = Converter.obtainTypeFromString(qname);
+    // Simple type info excludes the package name (but includes enclosing class names)
+    final TypeInfo simpleTypeInfo = Converter.obtainTypeFromString(name);
     token = tokenizer.requireToken();
-    cl = new ClassInfo(null/*classDoc*/, ""/*rawCommentText*/, tokenizer.pos(), pub, prot, 
-        pkgpriv, false/*isPrivate*/, stat, iface, abs, true/*isOrdinaryClass*/, 
+    cl = new ClassInfo(null/*classDoc*/, ""/*rawCommentText*/, tokenizer.pos(), pub, prot,
+        pkgpriv, false/*isPrivate*/, stat, iface, abs, true/*isOrdinaryClass*/,
         false/*isException*/, false/*isError*/, false/*isEnum*/, false/*isAnnotation*/,
-        fin, false/*isIncluded*/, typeInfo.simpleTypeName(), typeInfo.qualifiedTypeName(),
+        fin, false/*isIncluded*/, simpleTypeInfo.qualifiedTypeName(), typeInfo.qualifiedTypeName(),
         null/*qualifiedTypeName*/, false/*isPrimitive*/);
     cl.setTypeInfo(typeInfo);
     cl.setDeprecated(dep);
@@ -755,4 +757,3 @@ class ApiFile {
     return true;
   }
 }
-
