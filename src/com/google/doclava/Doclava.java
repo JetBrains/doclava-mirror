@@ -84,6 +84,7 @@ public class Doclava {
   public static ArrayList<String> inputPathHtmlDirs = new ArrayList<String>();
   public static ArrayList<String> inputPathHtmlDir2 = new ArrayList<String>();
   public static String inputPathResourcesDir;
+  public static String outputPathResourcesDir;
   public static String outputPathHtmlDirs;
   public static String outputPathHtmlDir2;
 
@@ -104,6 +105,7 @@ public class Doclava {
   public static Set<String> showAnnotations = new HashSet<String>();
   public static boolean showAnnotationOverridesVisibility = false;
   public static Set<String> hiddenPackages = new HashSet<String>();
+  public static boolean includeAssets = true;
   public static boolean includeDefaultAssets = true;
   private static boolean generateDocs = true;
   private static boolean parseComments = false;
@@ -217,6 +219,8 @@ public class Doclava {
       //the destination output path for additional resources (images)
       } else if (a[0].equals("-resourcesdir")) {
         inputPathResourcesDir = a[1];
+      } else if (a[0].equals("-resourcesoutdir")) {
+        outputPathResourcesDir = a[1];
       } else if (a[0].equals("-title")) {
         Doclava.title = a[1];
       } else if (a[0].equals("-werror")) {
@@ -276,6 +280,8 @@ public class Doclava {
       }
       else if (a[0].equals("-nodocs")) {
         generateDocs = false;
+      } else if (a[0].equals("-noassets")) {
+        includeAssets = false;
       } else if (a[0].equals("-nodefaultassets")) {
         includeDefaultAssets = false;
       } else if (a[0].equals("-parsecomments")) {
@@ -321,8 +327,8 @@ public class Doclava {
       } else if (a[0].equals("-atLinksNavtree")) {
         AT_LINKS_NAVTREE = true;
       } else if (a[0].equals("-devsite")) {
-        // Don't copy the doclava assets to devsite output (ie use proj assets only)
-        includeDefaultAssets = false;
+        // Don't copy any assets to devsite output
+        includeAssets = false;
         USE_DEVSITE_LOCALE_OUTPUT_PATHS = true;
         mHDFData.add(new String[] {"devsite", "1"});
         if (staticOnly) {
@@ -650,6 +656,9 @@ public class Doclava {
     if (option.equals("-resourcesdir")) {
       return 2;
     }
+    if (option.equals("-resourcesoutdir")) {
+      return 2;
+    }
     if (option.equals("-title")) {
       return 2;
     }
@@ -959,7 +968,7 @@ public class Doclava {
 
         ResourceLoader loader = new FileSystemResourceLoader(f);
         JSilver js = new JSilver(loader);
-        writeDirectory(f, "resources/", js);
+        writeDirectory(f, outputPathResourcesDir + "resources/", js);
       } catch(Exception e) {
         System.err.println("Could not copy resourcesdir: " + e);
       }
@@ -967,6 +976,7 @@ public class Doclava {
   }
 
   public static void writeAssets() {
+    if (!includeAssets) return;
     JarFile thisJar = JarUtils.jarForClass(Doclava.class, null);
     if ((thisJar != null) && (includeDefaultAssets)) {
       try {
@@ -1034,7 +1044,7 @@ public class Doclava {
         listDir = listDir + androidSupportPath;
         data.setValue("reference.androidSupport", "true");
       } else if (constraintSupportRef) {
-        listDir = listDir + androidSupportPath;
+        listDir = listDir + constraintSupportPath;
         data.setValue("reference.constraintSupport", "true");
       }
     }

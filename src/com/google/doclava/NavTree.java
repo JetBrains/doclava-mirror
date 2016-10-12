@@ -57,6 +57,10 @@ public class NavTree {
           && (Doclava.wearableSupportRef)){
         ClearPage.write(data, "navtree_data.cs", dir + Doclava.wearableSupportPath
           + "navtree_data.js");
+    } else if ((Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS)
+          && (Doclava.constraintSupportRef)){
+        ClearPage.write(data, "navtree_data.cs", dir + Doclava.constraintSupportPath
+          + "navtree_data.js");
     } else {
       ClearPage.write(data, "navtree_data.cs", "navtree_data.js");
     }
@@ -95,7 +99,7 @@ public class NavTree {
     } else if ((Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS) && (Doclava.androidSupportRef)) {
       dir = Doclava.ensureSlash(dir) + Doclava.androidSupportPath;
     } else if ((Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS) && (Doclava.constraintSupportRef)) {
-      dir = Doclava.ensureSlash(dir) + Doclava.constraintSupportRef;
+      dir = Doclava.ensureSlash(dir) + Doclava.constraintSupportPath;
     }
     ClearPage.write(data, "yaml_navtree.cs", Doclava.ensureSlash(dir) + fileName);
   }
