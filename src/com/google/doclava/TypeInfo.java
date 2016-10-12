@@ -54,7 +54,6 @@ public class TypeInfo implements Resolvable {
         if (c == ',' && bracketNesting == 0) {
           String entry = typeString.substring(entryStartPos, i).trim();
           TypeInfo info = new TypeInfo(entry);
-          info.setIsTypeVariable(true);
           generics.add(info);
           entryStartPos = i + 1;
         } else if (c == '<') {
@@ -70,8 +69,8 @@ public class TypeInfo implements Resolvable {
       }
 
       TypeInfo info = new TypeInfo(typeString.substring(entryStartPos, paramEndPos).trim());
-      info.setIsTypeVariable(true);
       generics.add(info);
+      addResolution(new Resolution("variability", "", null));
 
       mTypeArguments = generics;
 
@@ -482,6 +481,13 @@ public class TypeInfo implements Resolvable {
                   allResolved = false;
               } else {
                   mClass = InfoBuilder.Caches.obtainClass(qualifiedClassName.toString());
+              }
+          } else if ("variability".equals(resolution.getVariable())) {
+              StringBuilder qualifiedClassName = new StringBuilder();
+              for (TypeInfo arg : mTypeArguments) {
+                InfoBuilder.resolveQualifiedName(arg.simpleTypeName(), qualifiedClassName,
+                        resolution.getInfoBuilder());
+                arg.setIsTypeVariable(!("".equals(qualifiedClassName.toString())));
               }
           }
       }
