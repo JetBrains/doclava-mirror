@@ -44,6 +44,7 @@ public class Comment {
           "@serial",
           "@implNote",
           "@implSpec",
+          "@usesMathJax",
       }));
 
   public Comment(String text, ContainerInfo base, SourcePositionInfo sp) {
