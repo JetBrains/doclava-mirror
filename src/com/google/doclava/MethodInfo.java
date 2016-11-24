@@ -216,10 +216,17 @@ public class MethodInfo extends MemberInfo implements AbstractMethodInfo, Resolv
         }
       }
 
-      if (commentDeprecated != annotationDeprecated) {
+      // Check to see that the JavaDoc contains @deprecated AND the method is marked as @Deprecated.
+      // Otherwise, warn.
+      // Note: We only do this for "included" classes (i.e. those we have source code for); we do
+      // not have comments for classes from .class files but we do know whether a method is marked
+      // as @Deprecated.
+      if (mContainingClass.isIncluded() && commentDeprecated != annotationDeprecated) {
         Errors.error(Errors.DEPRECATION_MISMATCH, position(), "Method "
             + mContainingClass.qualifiedName() + "." + name()
-            + ": @Deprecated annotation and @deprecated doc tag do not match");
+            + ": @Deprecated annotation (" + (annotationDeprecated ? "" : "not ")
+            + "present) and @deprecated doc tag (" + (commentDeprecated ? "" : "not ")
+            + "present) do not match");
       }
 
       mIsDeprecated = commentDeprecated | annotationDeprecated;
