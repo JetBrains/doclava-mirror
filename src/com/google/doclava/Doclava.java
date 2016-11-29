@@ -968,7 +968,7 @@ public class Doclava {
 
         ResourceLoader loader = new FileSystemResourceLoader(f);
         JSilver js = new JSilver(loader);
-        writeDirectory(f, outputPathResourcesDir + "resources/", js);
+        writeDirectory(f, outputPathResourcesDir, js);
       } catch(Exception e) {
         System.err.println("Could not copy resourcesdir: " + e);
       }
