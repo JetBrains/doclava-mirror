@@ -128,6 +128,10 @@ def:tag_list(tags) ?><?cs
       elif:tag.kind == "@inheritDoc" ?><?cs # This is the case when @inheritDoc is in something
                                               that does not inherit from anything?><?cs
       elif:tag.kind == "@attr" ?><?cs
+      elif:tag.kind == "@usesMathJax" ?><?cs
+        if:devsite ?><script src="/_static/js/managed/mathjax/MathJax.js?config=TeX-AMS_SVG"></script><?cs
+        else ?><script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_SVG"></script><?cs
+        /if ?><?cs
       else ?>{<?cs var:tag.name?> <?cs var:tag.text ?>}<?cs
       /if ?><?cs
   /each ?><?cs
