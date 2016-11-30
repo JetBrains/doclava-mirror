@@ -54,11 +54,11 @@ public class Errors {
   }
 
   public static void error(Error error, SourcePositionInfo where, String text) {
-    if (error.level == HIDDEN) {
+    if (error.getLevel() == HIDDEN) {
       return;
     }
 
-    int level = (!warningsAreErrors && error.level == WARNING) ? WARNING : ERROR;
+    int level = (!warningsAreErrors && error.getLevel() == WARNING) ? WARNING : ERROR;
     String which = level == WARNING ? " warning " : " error ";
     String message = which + error.code + ": " + text;
 
@@ -68,7 +68,7 @@ public class Errors {
 
     allErrors.add(new ErrorMessage(error, where, message));
 
-    if (error.level == ERROR || (warningsAreErrors && error.level == WARNING)) {
+    if (error.getLevel() == ERROR || (warningsAreErrors && error.getLevel() == WARNING)) {
       hadError = true;
     }
   }
@@ -84,12 +84,12 @@ public class Errors {
   
   public static void printErrors(Set<ErrorMessage> errors) {
     for (ErrorMessage m : errors) {
-      if (m.error.level == WARNING) {
+      if (m.error.getLevel() == WARNING) {
         System.err.println(m.toString());
       }
     }
     for (ErrorMessage m : errors) {
-      if (m.error.level == ERROR) {
+      if (m.error.getLevel() == ERROR) {
         System.err.println(m.toString());
       }
     }
@@ -99,6 +99,7 @@ public class Errors {
     return allErrors;
   }
 
+  public static int INHERIT = -1;
   public static int HIDDEN = 0;
   public static int WARNING = 1;
   public static int ERROR = 2;
@@ -109,13 +110,71 @@ public class Errors {
 
   public static class Error {
     public int code;
+
+    /**
+     * @deprecated This field should not be access directly. Instead, use
+     *             {@link #getLevel()}.
+     */
+    @Deprecated
     public int level;
+
+    /**
+     * When {@code level} is set to {@link #INHERIT}, this is the parent from
+     * which the error will inherit its level.
+     */
+    private final Error parent;
 
     public Error(int code, int level) {
       this.code = code;
       this.level = level;
+      this.parent = null;
     }
-    
+
+    public Error(int code, Error parent) {
+      this.code = code;
+      this.level = -1;
+      this.parent = parent;
+    }
+
+    /**
+     * Returns the implied level for this error.
+     * <p>
+     * If the level is {@link #INHERIT}, the level will be returned for the
+     * parent.
+     *
+     * @return
+     * @throws IllegalStateException if the level is {@link #INHERIT} and the
+     *         parent is {@code null}
+     */
+    public int getLevel() {
+      if (level == INHERIT) {
+        if (parent == null) {
+          throw new IllegalStateException("Error with level INHERIT must have non-null parent");
+        }
+        return parent.getLevel();
+      }
+      return level;
+    }
+
+    /**
+     * Sets the level.
+     * <p>
+     * Valid arguments are:
+     * <ul>
+     *     <li>{@link #HIDDEN}
+     *     <li>{@link #WARNING}
+     *     <li>{@link #ERROR}
+     * </ul>
+     *
+     * @param level the level to set
+     */
+    public void setLevel(int level) {
+      if (level == INHERIT) {
+        throw new IllegalArgumentException("Error level may not be set to INHERIT");
+      }
+      this.level = level;
+    }
+
     public String toString() {
       return "Error #" + this.code;
     }
@@ -149,6 +208,9 @@ public class Errors {
   public static Error CHANGED_SYNCHRONIZED = new Error(25, ERROR);
   public static Error ADDED_FINAL_UNINSTANTIABLE = new Error(26, WARNING);
   public static Error REMOVED_FINAL = new Error(27, WARNING);
+  public static Error REMOVED_DEPRECATED_CLASS = new Error(28, REMOVED_CLASS);
+  public static Error REMOVED_DEPRECATED_METHOD = new Error(29, REMOVED_METHOD);
+  public static Error REMOVED_DEPRECATED_FIELD = new Error(30, REMOVED_FIELD);
 
   // Errors in javadoc generation
   public static final Error UNRESOLVED_LINK = new Error(101, WARNING);
@@ -174,8 +236,8 @@ public class Errors {
   public static final Error HIDDEN_TYPE_PARAMETER = new Error(121, HIDDEN);
   public static final Error PRIVATE_SUPERCLASS = new Error(122, ERROR);
 
-  public static final Error[] ERRORS =
-      {UNRESOLVED_LINK, BAD_INCLUDE_TAG, UNKNOWN_TAG, UNKNOWN_PARAM_TAG_NAME,
+  public static final Error[] ERRORS = {
+          UNRESOLVED_LINK, BAD_INCLUDE_TAG, UNKNOWN_TAG, UNKNOWN_PARAM_TAG_NAME,
           UNDOCUMENTED_PARAMETER, BAD_ATTR_TAG, BAD_INHERITDOC, HIDDEN_LINK, HIDDEN_CONSTRUCTOR,
           UNAVAILABLE_SYMBOL, HIDDEN_SUPERCLASS, DEPRECATED, DEPRECATION_MISMATCH, MISSING_COMMENT,
           IO_ERROR, NO_SINCE_DATA, NO_FEDERATION_DATA, PARSE_ERROR, ADDED_PACKAGE, ADDED_CLASS,
@@ -184,12 +246,14 @@ public class Errors {
           CHANGED_TRANSIENT, CHANGED_VOLATILE, CHANGED_TYPE, CHANGED_VALUE, CHANGED_SUPERCLASS,
           CHANGED_SCOPE, CHANGED_ABSTRACT, CHANGED_THROWS, CHANGED_NATIVE, CHANGED_CLASS,
           CHANGED_DEPRECATED, CHANGED_SYNCHRONIZED, ADDED_FINAL_UNINSTANTIABLE, REMOVED_FINAL,
-          BROKEN_SINCE_FILE, INVALID_CONTENT_TYPE, HIDDEN_TYPE_PARAMETER, PRIVATE_SUPERCLASS};
+          REMOVED_DEPRECATED_CLASS, REMOVED_DEPRECATED_METHOD, REMOVED_DEPRECATED_FIELD,
+          BROKEN_SINCE_FILE, INVALID_CONTENT_TYPE, HIDDEN_TYPE_PARAMETER, PRIVATE_SUPERCLASS
+  };
 
   public static boolean setErrorLevel(int code, int level) {
     for (Error e : ERRORS) {
       if (e.code == code) {
-        e.level = level;
+        e.setLevel(level);
         return true;
       }
     }

@@ -2,6 +2,10 @@ apply plugin: 'java'
 
 import javax.tools.ToolProvider
 
+dependencies {
+    testCompile 'junit:junit:4.12'
+}
+
 sourceSets {
     main {
         java {
@@ -9,6 +13,14 @@ sourceSets {
         }
         resources {
             srcDirs = ['res/']
+        }
+    }
+    test {
+        java {
+            srcDirs = ['test/']
+        }
+        resources {
+            srcDirs = ['test/api']
         }
     }
 }
