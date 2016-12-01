@@ -2106,8 +2106,13 @@ public class ClassInfo extends DocInfo implements ContainerInfo, Comparable, Sco
           mi = ClassInfo.interfaceMethod(mInfo, cl);
         }
         if (mi == null) {
-          Errors.error(Errors.REMOVED_METHOD, mInfo.position(), "Removed public method "
-              + mInfo.prettyQualifiedSignature());
+          if (mInfo.isDeprecated()) {
+            Errors.error(Errors.REMOVED_DEPRECATED_METHOD, mInfo.position(),
+                "Removed deprecated public method " + mInfo.prettyQualifiedSignature());
+          } else {
+            Errors.error(Errors.REMOVED_METHOD, mInfo.position(),
+                "Removed public method " + mInfo.prettyQualifiedSignature());
+          }
           consistent = false;
         }
       }
@@ -2142,8 +2147,13 @@ public class ClassInfo extends DocInfo implements ContainerInfo, Comparable, Sco
           consistent = false;
         }
       } else {
-        Errors.error(Errors.REMOVED_METHOD, mInfo.position(), "Removed public constructor "
-            + mInfo.prettyQualifiedSignature());
+        if (mInfo.isDeprecated()) {
+          Errors.error(Errors.REMOVED_DEPRECATED_METHOD, mInfo.position(),
+              "Removed deprecated public constructor " + mInfo.prettyQualifiedSignature());
+        } else {
+          Errors.error(Errors.REMOVED_METHOD, mInfo.position(),
+              "Removed public constructor " + mInfo.prettyQualifiedSignature());
+        }
         consistent = false;
       }
     }
@@ -2167,8 +2177,13 @@ public class ClassInfo extends DocInfo implements ContainerInfo, Comparable, Sco
           consistent = false;
         }
       } else {
-        Errors.error(Errors.REMOVED_FIELD, mInfo.position(), "Removed field "
-            + mInfo.qualifiedName());
+        if (mInfo.isDeprecated()) {
+          Errors.error(Errors.REMOVED_DEPRECATED_FIELD, mInfo.position(),
+              "Removed deprecated field " + mInfo.qualifiedName());
+        } else {
+          Errors.error(Errors.REMOVED_FIELD, mInfo.position(),
+              "Removed field " + mInfo.qualifiedName());
+        }
         consistent = false;
       }
     }
@@ -2186,8 +2201,13 @@ public class ClassInfo extends DocInfo implements ContainerInfo, Comparable, Sco
           consistent = false;
         }
       } else {
-        Errors.error(Errors.REMOVED_FIELD, info.position(), "Removed enum constant "
-            + info.qualifiedName());
+        if (info.isDeprecated()) {
+          Errors.error(Errors.REMOVED_DEPRECATED_FIELD, info.position(),
+              "Removed deprecated enum constant " + info.qualifiedName());
+        } else {
+          Errors.error(Errors.REMOVED_FIELD, info.position(),
+              "Removed enum constant " + info.qualifiedName());
+        }
         consistent = false;
       }
     }
