@@ -738,6 +738,13 @@ public class ClassInfo extends DocInfo implements ContainerInfo, Comparable, Sco
         }
       }
 
+      for (MethodInfo mi : annotationElements()) {
+        if (!mi.isHiddenOrRemoved()) {
+          // add annotation element as a field
+          methods.put(mi.name() + mi.signature(), mi);
+        }
+      }
+
       // sort it
       mSelfMethods = new ArrayList<MethodInfo>(methods.values());
       Collections.sort(mSelfMethods, MethodInfo.comparator);
