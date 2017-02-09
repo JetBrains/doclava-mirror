@@ -445,7 +445,7 @@ public class Doclava {
         }
 
         // Packages Pages
-        writePackages(javadocDir + refPrefix + "packages" + htmlExtension);
+        writePackages(refPrefix + "packages" + htmlExtension);
 
         // Classes
         writeClassLists();
@@ -458,9 +458,6 @@ public class Doclava {
         if (keepListFile != null) {
           writeKeepList(keepListFile);
         }
-
-        // Index page
-        writeIndex();
 
         Proofread.finishProofread(proofreadFile);
 
@@ -492,9 +489,9 @@ public class Doclava {
     return !Errors.hadError;
   }
 
-  private static void writeIndex() {
+  private static void writeIndex(String dir) {
     Data data = makeHDF();
-    ClearPage.write(data, "index.cs", javadocDir + "index" + htmlExtension);
+    ClearPage.write(data, "index.cs", dir + "index" + htmlExtension);
   }
 
   private static boolean readTemplateSettings() {
@@ -1332,8 +1329,20 @@ public class Doclava {
 
     TagInfo.makeHDF(data, "root.descr", Converter.convertTags(root.inlineTags(), null));
 
-    ClearPage.write(data, "packages.cs", filename);
-    ClearPage.write(data, "package-list.cs", javadocDir + "package-list");
+    String packageDir = javadocDir;
+    if (USE_DEVSITE_LOCALE_OUTPUT_PATHS) {
+      if (testSupportRef) {
+        packageDir = packageDir + testSupportPath;
+      } else if (wearableSupportRef) {
+        packageDir = packageDir + wearableSupportPath;
+      } else if (androidSupportRef) {
+        packageDir = packageDir + androidSupportPath;
+      } else if (constraintSupportRef) {
+        packageDir = packageDir + constraintSupportPath;
+      }
+    }
+    ClearPage.write(data, "packages.cs", packageDir + filename);
+    ClearPage.write(data, "package-list.cs", packageDir + "package-list");
 
     Proofread.writePackages(filename, Converter.convertTags(root.inlineTags(), null));
   }
@@ -1415,8 +1424,24 @@ public class Doclava {
       cl.makeShortDescrHDF(data, "docs.classes." + first + '.' + i);
     }
 
+    String packageDir = javadocDir;
+    if (USE_DEVSITE_LOCALE_OUTPUT_PATHS) {
+      if (testSupportRef) {
+        packageDir = packageDir + testSupportPath;
+      } else if (wearableSupportRef) {
+        packageDir = packageDir + wearableSupportPath;
+      } else if (androidSupportRef) {
+        packageDir = packageDir + androidSupportPath;
+      } else if (constraintSupportRef) {
+        packageDir = packageDir + constraintSupportPath;
+      }
+    }
+
     setPageTitle(data, "Class Index");
-    ClearPage.write(data, "classes.cs", javadocDir + "classes" + htmlExtension);
+    ClearPage.write(data, "classes.cs", packageDir + "classes" + htmlExtension);
+
+    // Index page redirects to the classes.html page, so use the same directory
+    writeIndex(packageDir);
   }
 
   // we use the word keywords because "index" means something else in html land

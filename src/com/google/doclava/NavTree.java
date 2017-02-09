@@ -92,6 +92,7 @@ public class NavTree {
     }
 
     data = makeYamlHDF(sorted, "docs.pages", data);
+
     if ((Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS) && (Doclava.testSupportRef)) {
       dir = Doclava.ensureSlash(dir) + Doclava.testSupportPath;
     } else if ((Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS) && (Doclava.wearableSupportRef)) {
@@ -101,6 +102,10 @@ public class NavTree {
     } else if ((Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS) && (Doclava.constraintSupportRef)) {
       dir = Doclava.ensureSlash(dir) + Doclava.constraintSupportPath;
     }
+
+    data.setValue("docs.classes.link", Doclava.ensureSlash(dir) + "classes.html");
+    data.setValue("docs.packages.link", Doclava.ensureSlash(dir) + "packages.html");
+
     ClearPage.write(data, "yaml_navtree.cs", Doclava.ensureSlash(dir) + fileName);
   }
 
@@ -133,6 +138,7 @@ public class NavTree {
 
       i++;
     }
+
     return data;
   }
 

@@ -5,6 +5,14 @@ path, and status_text (API level) for each package.
 
 ?>
 reference:<?cs
+if:docs.packages.link ?>
+- title: Class Index
+  path: /<?cs var:docs.classes.link ?>
+  status_text: no-toggle
+- title: Package Index
+  path: /<?cs var:docs.packages.link ?>
+  status_text: no-toggle<?cs
+/if ?><?cs
 each:page = docs.pages?><?cs
   if:page.type == "package"?>
 - title: <?cs var:page.label ?>
