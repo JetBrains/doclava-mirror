@@ -337,7 +337,9 @@ public class Doclava {
           DEVSITE_STATIC_ONLY = true;
           System.out.println("  ... Generating static html only for devsite");
         }
-        yamlNavFile = "_book.yaml";
+        if (yamlNavFile == null) {
+          yamlNavFile = "_book.yaml";
+        }
       }
     }
 
@@ -821,8 +823,6 @@ public class Doclava {
 
     return data;
   }
-
-
 
   public static Data makePackageHDF() {
     Data data = makeHDF();
