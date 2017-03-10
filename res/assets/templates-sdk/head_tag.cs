@@ -72,72 +72,83 @@ if:devsite ?>
   <meta name="hide_toc" value='True' /><?cs
       elif: !nonavpage && dac_subcategory_set && !tools && !sdk ?>
   <meta name="book_path" value="<?cs
-        if:ndk ?>/ndk<?cs
-          if:guide ?>/guides<?cs
-          elif:samples ?>/samples<?cs
-          elif:reference ?>/reference<?cs
-          elif:downloads ?>/downloads<?cs /if ?><?cs
+        if:!dac ?><?cs
+          if:book.path ?><?cs var:book.path ?><?cs
+          else ?>/_book.yaml<?cs
+          /if ?>" /><?cs
         else ?><?cs
-          if:reference.testSupport ?>/reference/android/support/test<?cs
-          elif:reference.wearableSupport ?>/reference/android/support/wearable<?cs
-          elif:reference.constraintSupport ?>/reference/android/support/constraint<?cs
-          elif:(guide||develop||training||reference||tools||sdk||samples) ?><?cs
-            if:guide ?>/guide<?cs
-            elif:training ?>/training<?cs
+          if:ndk ?>/ndk<?cs
+            if:guide ?>/guides<?cs
+            elif:samples ?>/samples<?cs
             elif:reference ?>/reference<?cs
-            elif:samples ?>/samples<?cs /if ?><?cs
-          elif:(google||reference.gms||reference.gcm) ?>/google<?cs
-          elif:(topic||libraries||perf) ?>/topic<?cs
-            if:libraries ?>/libraries<?cs
-            elif:instantapps ?>/instant-apps<?cs
-            elif:perf ?>/performance<?cs
-            elif:arc ?>/arc<?cs /if ?><?cs
-          elif:(distribute||googleplay||essentials||users||engage||monetize||disttools||stories||analyze) ?>/distribute<?cs
-            if:googleplay ?>/googleplay<?cs
-            elif:essentials ?>/essentials<?cs
-            elif:users ?>/users<?cs
-            elif:engage ?>/engage<?cs
-            elif:monetize ?>/monetize<?cs
-            elif:disttools ?>/tools<?cs
-            elif:stories ?>/stories<?cs
-            elif:analyze ?>/analyze<?cs /if ?><?cs
-          elif:(about||versions||wear||tv||auto) ?>/about<?cs
-          elif:preview ?>/preview<?cs
-          elif:wearpreview ?>/wear/preview<?cs
-          elif:work ?>/work<?cs
-          elif:design ?>/design<?cs
-          elif:walkthru ?>/walkthru<?cs /if ?><?cs
-        /if ?>/_book.yaml" /><?cs
-        /if ?>
+            elif:downloads ?>/downloads<?cs /if ?><?cs
+          else ?><?cs
+            if:reference.testSupport ?>/reference/android/support/test<?cs
+            elif:reference.wearableSupport ?>/reference/android/support/wearable<?cs
+            elif:reference.constraintSupport ?>/reference/android/support/constraint<?cs
+            elif:(guide||develop||training||reference||tools||sdk||samples) ?><?cs
+              if:guide ?>/guide<?cs
+              elif:training ?>/training<?cs
+              elif:reference ?>/reference<?cs
+              elif:samples ?>/samples<?cs /if ?><?cs
+            elif:(google||reference.gms||reference.gcm) ?>/google<?cs
+            elif:(topic||libraries||perf) ?>/topic<?cs
+              if:libraries ?>/libraries<?cs
+              elif:instantapps ?>/instant-apps<?cs
+              elif:perf ?>/performance<?cs
+              elif:arc ?>/arc<?cs /if ?><?cs
+            elif:(distribute||googleplay||essentials||users||engage||monetize||disttools||stories||analyze) ?>/distribute<?cs
+              if:googleplay ?>/googleplay<?cs
+              elif:essentials ?>/essentials<?cs
+              elif:users ?>/users<?cs
+              elif:engage ?>/engage<?cs
+              elif:monetize ?>/monetize<?cs
+              elif:disttools ?>/tools<?cs
+              elif:stories ?>/stories<?cs
+              elif:analyze ?>/analyze<?cs /if ?><?cs
+            elif:(about||versions||wear||tv||auto) ?>/about<?cs
+            elif:preview ?>/preview<?cs
+            elif:wearpreview ?>/wear/preview<?cs
+            elif:work ?>/work<?cs
+            elif:design ?>/design<?cs
+            elif:walkthru ?>/walkthru<?cs /if ?><?cs
+          /if ?>/_book.yaml" /><?cs
+        /if ?><?cs
+      /if ?>
   <meta name="project_path" value="<?cs
-      if:(guide||develop||training||reference||tools||sdk||samples) ?><?cs
-        if:guide ?>/guide<?cs
-        elif:training ?>/training<?cs
-        elif:reference ?>/reference<?cs
-        elif:samples ?>/samples<?cs /if ?><?cs
-      elif:(google||reference.gms||reference.gcm) ?>/google<?cs
-      elif:(topic||libraries) ?>/develop<?cs
-      elif:(distribute||googleplay||essentials||users||engage||monetize||disttools||stories||analyze) ?>/distribute<?cs
-        if:googleplay ?>/googleplay<?cs
-        elif:essentials ?>/essentials<?cs
-        elif:users ?>/users<?cs
-        elif:engage ?>/engage<?cs
-        elif:monetize ?>/monetize<?cs
-        elif:disttools ?>/tools<?cs
-        elif:stories ?>/stories<?cs
-        elif:analyze ?>/analyze<?cs
-        else ?><?cs /if ?><?cs
-      elif:(about||versions||wear||tv||auto) ?><?cs
-        if:versions ?>/about/versions<?cs
-        elif:wear ?>/wear<?cs
-        elif:tv ?>/tv<?cs
-        elif:auto ?>/auto<?cs
-        else ?>/about<?cs /if ?><?cs
-      elif:wearpreview ?>/wear/preview<?cs
-      elif:work ?>/work<?cs
-      elif:preview ?>/preview<?cs
-      elif:design ?>/design<?cs /if ?>/_project.yaml" /><?cs
-
+      if:!dac ?><?cs
+        if:project.path ?><?cs var:project.path ?><?cs
+        else ?>/_project.yaml<?cs
+        /if ?>" /><?cs
+      else ?><?cs
+        if:(guide||develop||training||reference||tools||sdk||samples) ?><?cs
+          if:guide ?>/guide<?cs
+          elif:training ?>/training<?cs
+          elif:reference ?>/reference<?cs
+          elif:samples ?>/samples<?cs /if ?><?cs
+        elif:(google||reference.gms||reference.gcm) ?>/google<?cs
+        elif:(topic||libraries) ?>/develop<?cs
+        elif:(distribute||googleplay||essentials||users||engage||monetize||disttools||stories||analyze) ?>/distribute<?cs
+          if:googleplay ?>/googleplay<?cs
+          elif:essentials ?>/essentials<?cs
+          elif:users ?>/users<?cs
+          elif:engage ?>/engage<?cs
+          elif:monetize ?>/monetize<?cs
+          elif:disttools ?>/tools<?cs
+          elif:stories ?>/stories<?cs
+          elif:analyze ?>/analyze<?cs
+          else ?><?cs /if ?><?cs
+        elif:(about||versions||wear||tv||auto) ?><?cs
+          if:versions ?>/about/versions<?cs
+          elif:wear ?>/wear<?cs
+          elif:tv ?>/tv<?cs
+          elif:auto ?>/auto<?cs
+          else ?>/about<?cs /if ?><?cs
+        elif:wearpreview ?>/wear/preview<?cs
+        elif:work ?>/work<?cs
+        elif:preview ?>/preview<?cs
+        elif:design ?>/design<?cs /if ?>/_project.yaml" /><?cs
+      /if ?><?cs
       if:page.tags && page.tags != "" ?>
   <meta name="keywords" value='<?cs var:page.tags ?>' /><?cs
       /if ?><?cs
@@ -158,6 +169,10 @@ if:devsite ?>
       /if ?><?cs
       if:excludeFromSuggestions ?>
   <meta name="hide_from_search_suggest" value="true" /><?cs
+      /if ?><?cs
+
+      if:!dac ?>
+  <meta name="hide_page_heading" value="true" /><?cs
       /if ?><?cs
 /if ?><?cs # END if/else devsite ?><?cs
 
