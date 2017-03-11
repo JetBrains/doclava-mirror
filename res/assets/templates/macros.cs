@@ -1,5 +1,12 @@
-<?cs # A link to a package ?><?cs
+<?cs
+# Set global vars for template features based on site and target.
+?><?cs
+if:dac ?><?cs
+  # standard devsite warns on inline js and script tags ?><?cs
+  set:enable_javascript = 1 ?><?cs
+/if ?>
 
+<?cs # A link to a package ?><?cs
 def:package_link(pkg) ?>
   <a href="<?cs var:toroot ?><?cs var:pkg.link ?>"><?cs var:pkg.name ?></a><?cs
   /def ?><?cs
@@ -410,46 +417,62 @@ def:package_link_list(packages) ?><?cs
   each:pkg=packages ?>
     <li class="<?cs if:(class.package.name == pkg.name) || (package.name == pkg.name)?>selected <?cs /if ?>api apilevel-<?cs var:pkg.since ?>"><?cs call:package_link(pkg) ?></li><?cs
   /each ?><?cs
-/def ?><?cs
+/def ?>
 
-# An expando trigger ?><?cs
+<?cs
+# An expando trigger
+?><?cs
 def:expando_trigger(id, default) ?>
-  <a href="#" onclick="return toggleInherited(this, null)" id="<?cs var:id ?>" class="jd-expando-trigger closed"
-          ><img height="34" id="<?cs var:id ?>-trigger"
-          src="<?cs var:toroot ?>assets/images/styles/disclosure_<?cs
-            if:default == 'closed' ?>down<?cs else ?>up<?cs /if ?>.png"
-          class="jd-expando-trigger-img" /></a><?cs
-/def ?><?cs
+  <a href="#" id="<?cs var:id ?>" class="jd-expando-trigger closed"<?cs
+    if:enable_javascript ?>
+     onclick="return toggleInherited(this, null)"<?cs
+    /if ?> >
+    <img id="<?cs var:id ?>-trigger" class="jd-expando-trigger-img"
+         height="34"
+         src="<?cs var:toroot ?>assets/images/styles/disclosure_<?cs
+              if:default == 'closed' ?>down<?cs else ?>up<?cs /if ?>.png" />
+  </a><?cs
+/def ?>
 
-# An expandable list of classes ?><?cs
+<?cs
+# An expandable list of classes
+?><?cs
 def:expandable_class_list(id, classes, default) ?>
   <div id="<?cs var:id ?>">
-      <div id="<?cs var:id ?>-list"
-              class="jd-inheritedlinks"
-              <?cs if:default != "list" ?>style="display: none;"<?cs /if ?>
-              >
-          <?cs if:subcount(classes) <= #20 ?>
-            <?cs each:cl=classes ?>
-              <?cs call:type_link(cl.type) ?><?cs if:!last(cl) ?>,<?cs /if ?>
-            <?cs /each ?>
-          <?cs else ?>
-            <?cs set:leftovers = subcount(classes) - #15 ?>
-            <?cs loop:i = #0, #14, #1 ?>
-              <?cs with:cl=classes[i] ?>
-                <?cs call:type_link(cl.type) ?>,
-              <?cs /with ?>
-              <?cs  if:(#i == #14) ?>and
-                <a href="#" onclick="return toggleInherited(document.getElementById('<?cs
-                   var:id ?>', null))"><?cs var:leftovers ?> others.</a>
-              <?cs /if ?>
-            <?cs /loop ?>
-          <?cs /if ?>
-      </div>
-      <div id="<?cs var:id ?>-summary"
-              <?cs if:default != "summary" ?>style="display: none;"<?cs /if ?>
-              ><?cs
-          call:class_link_table(classes) ?>
-      </div>
+    <div id="<?cs var:id ?>-list" class="jd-inheritedlinks"<?cs
+       if:default != "list" ?>
+         style="display: none;"<?cs
+       /if ?> > <?cs
+       if:subcount(classes) <= #20 ?><?cs
+         each:cl=classes ?><?cs
+         call:type_link(cl.type) ?><?cs
+         if:!last(cl)
+           ?>,<?cs
+         /if ?><?cs
+         /each ?><?cs
+       else ?><?cs
+         set:leftovers = subcount(classes) - #15 ?><?cs
+         loop:i = #0, #14, #1 ?><?cs
+           with:cl=classes[i] ?><?cs
+             call:type_link(cl.type) ?>,<?cs
+           /with ?><?cs
+           if:(#i == #14) ?>and
+             <a href="#"<?cs
+             if:enable_javascript ?>
+                onclick="return toggleInherited(document.getElementById('<?cs var:id ?>', null))"<?cs
+             /if ?> >
+             <?cs var:leftovers ?> others.</a><?cs
+           /if ?><?cs
+         /loop ?><?cs
+       /if ?>
+    </div>
+    <div id="<?cs var:id ?>-summary"<?cs
+      if:default != "summary" ?>
+         style="display: none;"<?cs
+      /if ?> >
+      <?cs call:class_link_table(classes) ?>
+    </div>
   </div><?cs
-/def ?><?cs
-include:"components.cs" ?>
+/def ?>
+
+<?cs include:"components.cs" ?>

@@ -210,7 +210,8 @@
 <?cs include:"head_tag.cs" ?>
 <?cs include:"body_tag.cs" ?>
 <?cs include:"header.cs" ?>
-<?cs include:"page_info.cs" ?>
+<?cs # Includes api-info-block DIV at top of page. Standard Devsite uses right nav. ?>
+<?cs if:dac ?><?cs include:"page_info.cs" ?><?cs /if ?>
 <?cs # This DIV spans the entire document to provide scope for some scripts ?>
 <div class="api apilevel-<?cs var:class.since ?>" id="jd-content">
 <?cs # this next line must be exactly like this to be parsed by eclipse ?>
@@ -279,17 +280,33 @@
 ?><?cs
 if:subcount(class.subclasses.direct) && !class.subclasses.hidden ?>
   <table class="jd-sumtable jd-sumtable-subclasses">
-  <tr><td style="border:none;margin:0;padding:0;">
-    <?cs call:expando_trigger("subclasses-direct", "closed") ?>Known Direct Subclasses
-    <?cs call:expandable_class_list("subclasses-direct", class.subclasses.direct, "list") ?>
-  </td></tr>
+    <tr>
+      <td style="border:none;margin:0;padding:0;"><?cs
+        if:enable_javascript ?>
+          <?cs call:expando_trigger("subclasses-direct", "closed") ?><span>Known Direct Subclasses</span>
+          <?cs call:expandable_class_list("subclasses-direct", class.subclasses.direct, "list") ?><?cs
+        else ?>
+          <span>Known Direct Subclasses</span>
+          <?cs call:expandable_class_list("subclasses-direct", class.subclasses.direct, "summary") ?><?cs
+        /if ?>
+      </td>
+    </tr>
   </table>
   <?cs /if ?>
   <?cs if:subcount(class.subclasses.indirect) && !class.subclasses.hidden ?>
-  <table class="jd-sumtable jd-sumtable-subclasses"><tr><td colspan="2" style="border:none;margin:0;padding:0;">
-  <?cs call:expando_trigger("subclasses-indirect", "closed") ?>Known Indirect Subclasses
-  <?cs call:expandable_class_list("subclasses-indirect", class.subclasses.indirect, "list") ?>
-  </td></tr></table><?cs
+  <table class="jd-sumtable jd-sumtable-subclasses">
+    <tr>
+      <td colspan="2" style="border:none;margin:0;padding:0;"><?cs
+        if:enable_javascript ?>
+          <?cs call:expando_trigger("subclasses-indirect", "closed") ?><span>Known Indirect Subclasses</span>
+          <?cs call:expandable_class_list("subclasses-indirect", class.subclasses.indirect, "list") ?><?cs
+        else ?>
+          <span>Known Indirect Subclasses</span>
+          <?cs call:expandable_class_list("subclasses-indirect", class.subclasses.indirect, "summary") ?><?cs
+        /if ?>
+      </td>
+    </tr>
+  </table><?cs
 /if ?>
 <?cs call:show_annotations_list(class) ?>
 <br><hr><?cs
@@ -349,8 +366,10 @@ if:subcount(class.subclasses.direct) && !class.subclasses.hidden ?>
 <?cs each:cl=class.inherited ?>
 <?cs if:subcount(cl.attrs) ?>
 <tr class="api apilevel-<?cs var:cl.since ?>" >
-<td colspan="2">
-<?cs call:expando_trigger("inherited-attrs-"+cl.qualified, "closed") ?>From
+<td colspan="2"><?cs
+  if:enable_javascript ?><?cs
+    call:expando_trigger("inherited-attrs-"+cl.qualified, "closed") ?><?cs
+  /if ?>From
 <?cs var:cl.kind ?>
 <code>
   <?cs call:cond_link(cl.qualified, toroot, cl.link, cl.included) ?>
@@ -407,8 +426,10 @@ if:subcount(class.subclasses.direct) && !class.subclasses.hidden ?>
 <?cs each:cl=class.inherited ?>
 <?cs if:subcount(cl.constants) ?>
   <tr class="api apilevel-<?cs var:cl.since ?>" >
-  <td>
-  <?cs call:expando_trigger("inherited-constants-"+cl.qualified, "closed") ?>From
+  <td><?cs
+    if:enable_javascript ?><?cs
+      call:expando_trigger("inherited-constants-"+cl.qualified, "closed") ?><?cs
+    /if ?>From
   <?cs var:cl.kind ?>
   <code>
     <?cs call:cond_link(cl.qualified, toroot, cl.link, cl.included) ?>
@@ -446,8 +467,10 @@ if:subcount(class.subclasses.direct) && !class.subclasses.hidden ?>
 <?cs each:cl=class.inherited ?>
 <?cs if:subcount(cl.fields) ?>
   <tr class="api apilevel-<?cs var:cl.since ?>" >
-  <td>
-  <?cs call:expando_trigger("inherited-fields-"+cl.qualified, "closed") ?>From
+  <td><?cs
+    if:enable_javascript ?><?cs
+      call:expando_trigger("inherited-fields-"+cl.qualified, "closed") ?><?cs
+    /if ?>From
   <?cs var:cl.kind ?>
   <code>
     <?cs call:cond_link(cl.qualified, toroot, cl.link, cl.included) ?>
@@ -512,8 +535,10 @@ if:subcount(class.subclasses.direct) && !class.subclasses.hidden ?>
 <?cs each:cl=class.inherited ?>
 <?cs if:subcount(cl.methods) ?>
 <tr class="api apilevel-<?cs var:cl.since ?>" >
-<td colspan="2">
-<?cs call:expando_trigger("inherited-methods-"+cl.qualified, "closed") ?>From
+<td colspan="2"><?cs
+  if:enable_javascript ?><?cs
+    call:expando_trigger("inherited-methods-"+cl.qualified, "closed") ?><?cs
+  /if ?>From
 <?cs var:cl.kind ?>
 <code>
   <?cs if:cl.included ?>

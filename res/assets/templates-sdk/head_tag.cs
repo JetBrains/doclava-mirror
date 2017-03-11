@@ -242,4 +242,9 @@ if:android.whichdoc != 'online' ?>http:<?cs
   ga('universal.send', 'pageview'); // Send page view for new tracker.
 </script><?cs /if ?><?cs
 # END if/else !devsite ?>
+
+<?cs if:css.path ?><?cs
+#include custom stylesheet ?>
+<link rel="stylesheet" href="<?cs var:css.path ?>"><?cs
+/if ?>
 </head>
