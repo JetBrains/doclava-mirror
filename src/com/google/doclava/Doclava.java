@@ -1346,6 +1346,7 @@ public class Doclava {
         packageDir = packageDir + constraintSupportPath;
       }
     }
+    data.setValue("page.not-api", "true");
     ClearPage.write(data, "packages.cs", packageDir + filename);
     ClearPage.write(data, "package-list.cs", packageDir + "package-list");
 
@@ -1442,6 +1443,7 @@ public class Doclava {
       }
     }
 
+    data.setValue("page.not-api", "true");
     setPageTitle(data, "Class Index");
     ClearPage.write(data, "classes.cs", packageDir + "classes" + htmlExtension);
 

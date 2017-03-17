@@ -11,5 +11,7 @@
     ?>design<?cs
   elif:distribute
     ?>distribute<?cs
-  /if ?>">
-<div id="doc-api-level" class="<?cs var:class.since ?><?cs var:package.since ?>" style="display:none"></div>
+  /if ?>"><?cs
+if:dac && !page.not-api
+  ?><div id="doc-api-level" class="<?cs var:class.since ?><?cs var:package.since ?>" style="display:none"></div><?cs
+/if ?>
