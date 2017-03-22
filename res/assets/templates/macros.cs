@@ -249,8 +249,14 @@ def:see_also_tags(also) ?><?cs
 # print the API Level ?><?cs
 def:since_tags(obj) ?><?cs
 if:reference.apilevels && obj.since ?><?cs
-  if:obj.since > 0 ?>
-    added in <a href="<?cs var:toroot ?>guide/topics/manifest/uses-sdk-element.html#ApiLevels">API level <?cs var:obj.since ?></a><?cs
+  if:string.slice(obj.since,0,1) > 0 ?>
+    added in <?cs
+      if:string.find(obj.since,'.') > -1
+        ?><a href="<?cs var:toroot ?>topic/libraries/support-library/revisions.html">version<?cs
+      else
+        ?><a href="<?cs var:toroot ?>guide/topics/manifest/uses-sdk-element.html#ApiLevels">API level<?cs
+      /if ?><?cs
+    var:obj.since ?></a><?cs
   else ?>
     <b><a href="<?cs var:toroot ?>preview/">Android <?cs var:obj.since ?> Developer Preview</a></b><?cs
   /if?><?cs
