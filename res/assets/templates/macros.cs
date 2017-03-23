@@ -255,7 +255,7 @@ if:reference.apilevels && obj.since ?><?cs
         ?><a href="<?cs var:toroot ?>topic/libraries/support-library/revisions.html">version<?cs
       else
         ?><a href="<?cs var:toroot ?>guide/topics/manifest/uses-sdk-element.html#ApiLevels">API level<?cs
-      /if ?><?cs
+      /if ?> <?cs
     var:obj.since ?></a><?cs
   else ?>
     <b><a href="<?cs var:toroot ?>preview/">Android <?cs var:obj.since ?> Developer Preview</a></b><?cs
