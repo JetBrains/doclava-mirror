@@ -7,7 +7,8 @@
 <?cs include:"head_tag.cs" ?>
 <?cs include:"body_tag.cs" ?>
 <?cs include:"header.cs" ?>
-<?cs include:"page_info.cs" ?>
+<?cs # Includes api-info-block DIV at top of page. Standard Devsite uses right nav. ?>
+<?cs if:dac ?><?cs include:"page_info.cs" ?><?cs /if ?>
 <div class="api apilevel-<?cs var:package.since ?>" id="jd-content">
 
 <h1><?cs var:package.name ?></h1>
