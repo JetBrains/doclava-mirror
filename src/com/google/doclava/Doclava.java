@@ -771,6 +771,7 @@ public class Doclava {
     }
     if (option.equals("-androidSupportRef")) {
       androidSupportRef = true;
+      return 1;
     }
     if (option.equals("-constraintSupportRef")) {
       constraintSupportRef = true;
