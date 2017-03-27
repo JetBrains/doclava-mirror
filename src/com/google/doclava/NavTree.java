@@ -58,6 +58,10 @@ public class NavTree {
         ClearPage.write(data, "navtree_data.cs", dir + Doclava.wearableSupportPath
           + "navtree_data.js");
     } else if ((Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS)
+          && (Doclava.androidSupportRef)){
+        ClearPage.write(data, "navtree_data.cs", dir + Doclava.androidSupportPath
+          + "navtree_data.js");
+    } else if ((Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS)
           && (Doclava.constraintSupportRef)){
         ClearPage.write(data, "navtree_data.cs", dir + Doclava.constraintSupportPath
           + "navtree_data.js");
