@@ -49,21 +49,8 @@ public class NavTree {
       ClearPage.write(data, "gms_navtree_data.cs", "gms_navtree_data.js");
     } else if (refPrefix == "gcm-"){
       ClearPage.write(data, "gcm_navtree_data.cs", "gcm_navtree_data.js");
-    } else if ((Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS)
-          && (Doclava.testSupportRef)){
-        ClearPage.write(data, "navtree_data.cs", dir + Doclava.testSupportPath
-          + "navtree_data.js");
-    } else if ((Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS)
-          && (Doclava.wearableSupportRef)){
-        ClearPage.write(data, "navtree_data.cs", dir + Doclava.wearableSupportPath
-          + "navtree_data.js");
-    } else if ((Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS)
-          && (Doclava.androidSupportRef)){
-        ClearPage.write(data, "navtree_data.cs", dir + Doclava.androidSupportPath
-          + "navtree_data.js");
-    } else if ((Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS)
-          && (Doclava.constraintSupportRef)){
-        ClearPage.write(data, "navtree_data.cs", dir + Doclava.constraintSupportPath
+    } else if (Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS && (Doclava.libraryRoot != null)) {
+        ClearPage.write(data, "navtree_data.cs", dir + Doclava.libraryRoot
           + "navtree_data.js");
     } else {
       ClearPage.write(data, "navtree_data.cs", "navtree_data.js");
@@ -97,14 +84,8 @@ public class NavTree {
 
     data = makeYamlHDF(sorted, "docs.pages", data);
 
-    if ((Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS) && (Doclava.testSupportRef)) {
-      dir = Doclava.ensureSlash(dir) + Doclava.testSupportPath;
-    } else if ((Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS) && (Doclava.wearableSupportRef)) {
-      dir = Doclava.ensureSlash(dir) + Doclava.wearableSupportPath;
-    } else if ((Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS) && (Doclava.androidSupportRef)) {
-      dir = Doclava.ensureSlash(dir) + Doclava.androidSupportPath;
-    } else if ((Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS) && (Doclava.constraintSupportRef)) {
-      dir = Doclava.ensureSlash(dir) + Doclava.constraintSupportPath;
+    if (Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS && (Doclava.libraryRoot != null)) {
+      dir = Doclava.ensureSlash(dir) + Doclava.libraryRoot;
     }
 
     data.setValue("docs.classes.link", Doclava.ensureSlash(dir) + "classes.html");
