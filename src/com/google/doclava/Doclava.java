@@ -121,14 +121,7 @@ public class Doclava {
   //API reference extensions
   private static boolean gmsRef = false;
   private static boolean gcmRef = false;
-  public static boolean testSupportRef = false;
-  public static String testSupportPath = "android/support/test/";
-  public static boolean wearableSupportRef = false;
-  public static String wearableSupportPath = "android/support/wearable/";
-  public static boolean androidSupportRef = false;
-  public static String androidSupportPath = "android/support/";
-  public static boolean constraintSupportRef = false;
-  public static String constraintSupportPath = "android/support/constraint/";
+  public static String libraryRoot = null;
   private static boolean samplesRef = false;
   private static boolean sac = false;
 
@@ -315,6 +308,10 @@ public class Doclava {
         federationTagger.addSiteApi(name, file);
       } else if (a[0].equals("-yaml")) {
         yamlNavFile = a[1];
+      } else if (a[0].equals("-dac_libraryroot")) {
+        libraryRoot = a[1];
+      } else if (a[0].equals("-dac_dataname")) {
+        mHDFData.add(new String[] {"dac_dataname", a[1]});
       } else if (a[0].equals("-documentannotations")) {
         documentAnnotations = true;
         documentAnnotationsPath = a[1];
@@ -654,6 +651,12 @@ public class Doclava {
     if (option.equals("-devsite")) {
       return 1;
     }
+    if (option.equals("-dac_libraryroot")) {
+      return 2;
+    }
+    if (option.equals("-dac_dataname")) {
+      return 2;
+    }
     if (option.equals("-ignoreJdLinks")) {
       return 1;
     }
@@ -765,22 +768,6 @@ public class Doclava {
     }
     if (option.equals("-gcmref")) {
       gcmRef = true;
-      return 1;
-    }
-    if (option.equals("-testSupportRef")) {
-      testSupportRef = true;
-      return 1;
-    }
-    if (option.equals("-wearableSupportRef")) {
-      wearableSupportRef = true;
-      return 1;
-    }
-    if (option.equals("-androidSupportRef")) {
-      androidSupportRef = true;
-      return 1;
-    }
-    if (option.equals("-constraintSupportRef")) {
-      constraintSupportRef = true;
       return 1;
     }
     if (option.equals("-metadataDebug")) {
@@ -900,14 +887,6 @@ public class Doclava {
           data.setValue("reference.gms", "true");
       } else if(gcmRef){
           data.setValue("reference.gcm", "true");
-      } else if(testSupportRef){
-          data.setValue("reference.testSupport", "true");
-      } else if(wearableSupportRef){
-          data.setValue("reference.wearableSupport", "true");
-      } else if(androidSupportRef){
-          data.setValue("reference.androidSupport", "true");
-      } else if(constraintSupportRef){
-          data.setValue("reference.constraintSupport", "true");
       }
       data.setValue("reference", "1");
       data.setValue("reference.apilevels", sinceTagger.hasVersions() ? "1" : "0");
@@ -1043,18 +1022,9 @@ public class Doclava {
     int i = 0;
     String listDir = javadocDir;
     if (USE_DEVSITE_LOCALE_OUTPUT_PATHS) {
-      if (testSupportRef) {
-        listDir = listDir + testSupportPath;
-        data.setValue("reference.testSupport", "true");
-      } else if (wearableSupportRef) {
-        listDir = listDir + wearableSupportPath;
-        data.setValue("reference.wearableSupport", "true");
-      } else if (androidSupportRef) {
-        listDir = listDir + androidSupportPath;
-        data.setValue("reference.androidSupport", "true");
-      } else if (constraintSupportRef) {
-        listDir = listDir + constraintSupportPath;
-        data.setValue("reference.constraintSupport", "true");
+      if (libraryRoot != null) {
+        listDir = listDir + libraryRoot;
+        data.setValue("library.root", libraryRoot);
       }
     }
     for (String s : sorted.keySet()) {
@@ -1343,14 +1313,8 @@ public class Doclava {
 
     String packageDir = javadocDir;
     if (USE_DEVSITE_LOCALE_OUTPUT_PATHS) {
-      if (testSupportRef) {
-        packageDir = packageDir + testSupportPath;
-      } else if (wearableSupportRef) {
-        packageDir = packageDir + wearableSupportPath;
-      } else if (androidSupportRef) {
-        packageDir = packageDir + androidSupportPath;
-      } else if (constraintSupportRef) {
-        packageDir = packageDir + constraintSupportPath;
+      if (libraryRoot != null) {
+        packageDir = packageDir + libraryRoot;
       }
     }
     data.setValue("page.not-api", "true");
@@ -1439,14 +1403,8 @@ public class Doclava {
 
     String packageDir = javadocDir;
     if (USE_DEVSITE_LOCALE_OUTPUT_PATHS) {
-      if (testSupportRef) {
-        packageDir = packageDir + testSupportPath;
-      } else if (wearableSupportRef) {
-        packageDir = packageDir + wearableSupportPath;
-      } else if (androidSupportRef) {
-        packageDir = packageDir + androidSupportPath;
-      } else if (constraintSupportRef) {
-        packageDir = packageDir + constraintSupportPath;
+      if (libraryRoot != null) {
+        packageDir = packageDir + libraryRoot;
       }
     }
 
