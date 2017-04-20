@@ -16,10 +16,11 @@
 
 package com.google.doclava;
 
-import com.google.doclava.apicheck.ApiParseException;
 import com.google.clearsilver.jsilver.data.Data;
-import java.util.Comparator;
+import com.google.doclava.apicheck.ApiParseException;
+
 import java.util.ArrayList;
+import java.util.Comparator;
 
 public class FieldInfo extends MemberInfo {
   public static final Comparator<FieldInfo> comparator = new Comparator<FieldInfo>() {
@@ -330,6 +331,7 @@ public class FieldInfo extends MemberInfo {
     data.setValue(base + ".anchor", anchor());
     TagInfo.makeHDF(data, base + ".shortDescr", firstSentenceTags());
     TagInfo.makeHDF(data, base + ".descr", inlineTags());
+    TagInfo.makeHDF(data, base + ".descrAux", AuxUtils.tags(AuxUtils.TYPE_FIELD, annotations()));
     TagInfo.makeHDF(data, base + ".deprecated", comment().deprecatedTags());
     TagInfo.makeHDF(data, base + ".seeAlso", comment().seeTags());
     data.setValue(base + ".since", getSince());
