@@ -168,6 +168,41 @@ def:block_tag_list(tags) ?><?cs
   /each ?><?cs
 /def ?><?cs
 
+# Print output for aux tags that are not "standard" javadoc tags ?><?cs
+def:aux_tag_list(tags) ?><?cs
+  each:tag = tags ?><p><?cs
+      if:tag.kind == "@memberDoc" ?><?cs call:tag_list(tag.commentTags) ?><?cs
+      elif:tag.kind == "@paramDoc" ?><?cs call:tag_list(tag.commentTags) ?><?cs
+      elif:tag.kind == "@returnDoc" ?><?cs call:tag_list(tag.commentTags) ?><?cs
+      elif:tag.kind == "@range" ?><?cs call:dump_range(tag) ?><?cs
+      elif:tag.kind == "@intDef" ?><?cs call:dump_int_def(tag) ?><?cs
+      /if ?><?cs
+  /each ?></p><?cs
+/def ?><?cs
+
+# Print output for @range tags ?><?cs
+def:dump_range(tag) ?><?cs
+  if:tag.from && tag.to ?>Value is between <?cs var:tag.from ?> and <?cs var:tag.to ?> inclusive.<?cs
+  elif:tag.from ?>Value is <?cs var:tag.from ?> or greater.<?cs
+  elif:tag.to ?>Value is <?cs var:tag.to ?> or less.<?cs
+  /if ?><?cs
+/def ?><?cs
+
+# Print output for @intDef tags ?><?cs
+def:dump_int_def(tag) ?><?cs
+  if:tag.flag ?>Value is either <code>0</code> or combination of <?cs
+  else ?>Value is <?cs
+  /if ?><?cs
+  loop:i = #0, subcount(tag.values), #1 ?><?cs
+    with:val = tag.values[i] ?><?cs
+      call:tag_list(val.commentTags) ?><?cs
+      if i == subcount(tag.values) - 2 ?>, or <?cs
+      elif:i < subcount(tag.values) - 2 ?>, <?cs
+      /if ?><?cs
+    /with ?><?cs
+  /loop ?>.<?cs
+/def ?><?cs
+
 # Show the short-form description of something.  These come from shortDescr and deprecated ?><?cs
 def:short_descr(obj) ?><?cs
   if:subcount(obj.deprecated) ?><em><?cs
@@ -290,6 +325,7 @@ def:federated_refs(obj) ?>
 def:description(obj) ?><?cs
   call:deprecated_warning(obj) ?>
   <p><?cs call:tag_list(obj.descr) ?></p><?cs
+  call:aux_tag_list(obj.descrAux) ?><?cs
   if:subcount(obj.annotationdocumentation)?><?cs
     each:annodoc=obj.annotationdocumentation ?>
     <div style="display:block"><?cs var:annodoc.text?></div><?cs
@@ -323,8 +359,9 @@ def:description(obj) ?><?cs
           <code><?cs var:param.kind ?></code><?cs
           if:string.find(param.comment.0.text, "<!--") != 0
             ?>:<?cs # Do not print if param comment is an HTML comment ?><?cs
-          /if ?>
-          <?cs call:tag_list(param.comment) ?></td>
+          /if ?><?cs
+          call:tag_list(param.comment) ?><?cs
+          call:aux_tag_list(param.commentAux) ?></td>
       </tr><?cs
     /each ?>
     </table><?cs
@@ -333,24 +370,17 @@ def:description(obj) ?><?cs
   # Print the @return value
   #
   ?><?cs
-  if:subcount(obj.returns) ?>
+  if:subcount(obj.returns) || (subcount(method.returnType) && method.returnType.label != 'void') ?>
     <table class="responsive">
       <tr><th colspan=2>Returns</th></tr>
       <tr>
         <td><code><?cs call:type_link(method.returnType) ?></code></td>
-        <td width="100%"><?cs call:tag_list(obj.returns) ?></td>
-      </tr>
-    </table><?cs
-  #
-  # If no return tag found, but there is a return type not 'void', print it
-  #
-  ?><?cs
-  elif:subcount(method.returnType) && method.returnType.label != 'void' ?>
-    <table class="responsive">
-      <tr><th colspan=2>Returns</th></tr>
-      <tr>
-        <td><code><?cs call:type_link(method.returnType) ?></code></td>
-        <td width="100%"><!-- no returns description in source --></td>
+        <td width="100%"><?cs
+        if:subcount(obj.returns) ?><?cs
+          call:tag_list(obj.returns) ?><?cs
+        else ?><!-- no returns description in source --><?cs
+        /if ?><?cs
+        call:aux_tag_list(obj.returnsAux) ?></td>
       </tr>
     </table><?cs
   /if ?><?cs
