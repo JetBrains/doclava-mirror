@@ -505,7 +505,7 @@ public class MethodInfo extends MemberInfo implements AbstractMethodInfo, Resolv
         }
 
         // Collect all docs requested by annotations
-        TagInfo[] auxTags = AuxUtils.tags(AuxUtils.TYPE_PARAM, param.annotations());
+        TagInfo[] auxTags = AuxUtils.paramAuxTags(this, param);
 
         // Okay, now add the collected parameter information to the method data
         mParamTags[i] =
@@ -616,7 +616,7 @@ public class MethodInfo extends MemberInfo implements AbstractMethodInfo, Resolv
 
     TagInfo.makeHDF(data, base + ".shortDescr", firstSentenceTags());
     TagInfo.makeHDF(data, base + ".descr", inlineTags());
-    TagInfo.makeHDF(data, base + ".descrAux", AuxUtils.tags(AuxUtils.TYPE_METHOD, annotations()));
+    TagInfo.makeHDF(data, base + ".descrAux", AuxUtils.methodAuxTags(this));
     TagInfo.makeHDF(data, base + ".blockTags", blockTags());
     TagInfo.makeHDF(data, base + ".deprecated", deprecatedTags());
     TagInfo.makeHDF(data, base + ".seeAlso", seeTags());
@@ -635,7 +635,7 @@ public class MethodInfo extends MemberInfo implements AbstractMethodInfo, Resolv
       data.setValue(base + ".scope", "public");
     }
     TagInfo.makeHDF(data, base + ".returns", returnTags());
-    TagInfo.makeHDF(data, base + ".returnsAux", AuxUtils.tags(AuxUtils.TYPE_RETURN, annotations()));
+    TagInfo.makeHDF(data, base + ".returnsAux", AuxUtils.returnAuxTags(this));
 
     if (mTypeParameters != null) {
       TypeInfo.makeHDF(data, base + ".generic.typeArguments", mTypeParameters, false);

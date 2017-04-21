@@ -331,7 +331,7 @@ public class FieldInfo extends MemberInfo {
     data.setValue(base + ".anchor", anchor());
     TagInfo.makeHDF(data, base + ".shortDescr", firstSentenceTags());
     TagInfo.makeHDF(data, base + ".descr", inlineTags());
-    TagInfo.makeHDF(data, base + ".descrAux", AuxUtils.tags(AuxUtils.TYPE_FIELD, annotations()));
+    TagInfo.makeHDF(data, base + ".descrAux", AuxUtils.fieldAuxTags(this));
     TagInfo.makeHDF(data, base + ".deprecated", comment().deprecatedTags());
     TagInfo.makeHDF(data, base + ".seeAlso", comment().seeTags());
     data.setValue(base + ".since", getSince());
