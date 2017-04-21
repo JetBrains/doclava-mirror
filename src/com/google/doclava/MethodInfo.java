@@ -504,10 +504,13 @@ public class MethodInfo extends MemberInfo implements AbstractMethodInfo, Resolv
           }
         }
 
+        // Collect all docs requested by annotations
+        TagInfo[] auxTags = AuxUtils.tags(AuxUtils.TYPE_PARAM, param.annotations());
+
         // Okay, now add the collected parameter information to the method data
         mParamTags[i] =
             new ParamTagInfo("@param", type, name + " " + comment, parent(),
-                position);
+                position, auxTags);
 
         // while we're here, if we find any parameters that are still
         // undocumented at this point, complain. This warning is off by
@@ -613,6 +616,7 @@ public class MethodInfo extends MemberInfo implements AbstractMethodInfo, Resolv
 
     TagInfo.makeHDF(data, base + ".shortDescr", firstSentenceTags());
     TagInfo.makeHDF(data, base + ".descr", inlineTags());
+    TagInfo.makeHDF(data, base + ".descrAux", AuxUtils.tags(AuxUtils.TYPE_METHOD, annotations()));
     TagInfo.makeHDF(data, base + ".blockTags", blockTags());
     TagInfo.makeHDF(data, base + ".deprecated", deprecatedTags());
     TagInfo.makeHDF(data, base + ".seeAlso", seeTags());
@@ -631,6 +635,7 @@ public class MethodInfo extends MemberInfo implements AbstractMethodInfo, Resolv
       data.setValue(base + ".scope", "public");
     }
     TagInfo.makeHDF(data, base + ".returns", returnTags());
+    TagInfo.makeHDF(data, base + ".returnsAux", AuxUtils.tags(AuxUtils.TYPE_RETURN, annotations()));
 
     if (mTypeParameters != null) {
       TypeInfo.makeHDF(data, base + ".generic.typeArguments", mTypeParameters, false);
@@ -654,6 +659,7 @@ public class MethodInfo extends MemberInfo implements AbstractMethodInfo, Resolv
       showAnnotations().toArray(new AnnotationInstanceInfo[showAnnotations().size()]));
 
     setFederatedReferences(data, base);
+
   }
 
   public HashSet<String> typeVariables() {
