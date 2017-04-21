@@ -21,18 +21,35 @@ import java.util.HashMap;
 import java.util.List;
 
 public class AuxUtils {
-  public static final int TYPE_METHOD = 0;
-  public static final int TYPE_FIELD = 1;
-  public static final int TYPE_PARAM = 2;
-  public static final int TYPE_RETURN = 3;
+  private static final int TYPE_METHOD = 0;
+  private static final int TYPE_FIELD = 1;
+  private static final int TYPE_PARAM = 2;
+  private static final int TYPE_RETURN = 3;
 
-  public static TagInfo[] tags(int type, List<AnnotationInstanceInfo> annotations) {
+  public static TagInfo[] fieldAuxTags(FieldInfo field) {
+    if (hasSuppress(field)) return TagInfo.EMPTY_ARRAY;
+    return auxTags(TYPE_FIELD, field.annotations());
+  }
+
+  public static TagInfo[] methodAuxTags(MethodInfo method) {
+    if (hasSuppress(method)) return TagInfo.EMPTY_ARRAY;
+    return auxTags(TYPE_METHOD, method.annotations());
+  }
+
+  public static TagInfo[] paramAuxTags(MethodInfo method, ParameterInfo param) {
+    if (hasSuppress(method)) return TagInfo.EMPTY_ARRAY;
+    if (hasSuppress(param.annotations())) return TagInfo.EMPTY_ARRAY;
+    return auxTags(TYPE_PARAM, param.annotations());
+  }
+
+  public static TagInfo[] returnAuxTags(MethodInfo method) {
+    if (hasSuppress(method)) return TagInfo.EMPTY_ARRAY;
+    return auxTags(TYPE_RETURN, method.annotations());
+  }
+
+  private static TagInfo[] auxTags(int type, List<AnnotationInstanceInfo> annotations) {
     ArrayList<TagInfo> tags = new ArrayList<>();
     for (AnnotationInstanceInfo annotation : annotations) {
-      if (annotation.type().qualifiedName().equals("android.annotation.SuppressAutoDoc")) {
-        return TagInfo.EMPTY_ARRAY;
-      }
-
       ParsedTagInfo[] docTags = ParsedTagInfo.EMPTY_ARRAY;
       switch (type) {
         case TYPE_METHOD:
@@ -116,5 +133,19 @@ public class AuxUtils {
       }
     }
     return tags.toArray(TagInfo.getArray(tags.size()));
+  }
+
+  private static boolean hasSuppress(MemberInfo member) {
+    return hasSuppress(member.annotations())
+        || hasSuppress(member.containingClass().annotations());
+  }
+
+  private static boolean hasSuppress(List<AnnotationInstanceInfo> annotations) {
+    for (AnnotationInstanceInfo annotation : annotations) {
+      if (annotation.type().qualifiedName().equals("android.annotation.SuppressAutoDoc")) {
+        return true;
+      }
+    }
+    return false;
   }
 }
