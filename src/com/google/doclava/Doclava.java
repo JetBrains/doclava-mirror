@@ -310,6 +310,7 @@ public class Doclava {
         yamlNavFile = a[1];
       } else if (a[0].equals("-dac_libraryroot")) {
         libraryRoot = a[1];
+        mHDFData.add(new String[] {"library.root", a[1]});
       } else if (a[0].equals("-dac_dataname")) {
         mHDFData.add(new String[] {"dac_dataname", a[1]});
       } else if (a[0].equals("-documentannotations")) {
@@ -1024,7 +1025,6 @@ public class Doclava {
     if (USE_DEVSITE_LOCALE_OUTPUT_PATHS) {
       if (libraryRoot != null) {
         listDir = listDir + libraryRoot;
-        data.setValue("library.root", libraryRoot);
       }
     }
     for (String s : sorted.keySet()) {
