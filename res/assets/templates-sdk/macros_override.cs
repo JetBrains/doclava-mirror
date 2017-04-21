@@ -48,4 +48,61 @@ def:parameter_list(params, linebreaks) ?><?cs
                 <?cs /if ?><?cs
       /if ?><?cs
   /each ?><?cs
+/def ?><?cs
+
+# Print output for aux tags that are not "standard" javadoc tags ?><?cs
+def:aux_tag_list(tags) ?><?cs
+  each:tag = tags ?><p><?cs
+      if:tag.kind == "@memberDoc" ?><?cs call:tag_list(tag.commentTags) ?><?cs
+      elif:tag.kind == "@paramDoc" ?><?cs call:tag_list(tag.commentTags) ?><?cs
+      elif:tag.kind == "@returnDoc" ?><?cs call:tag_list(tag.commentTags) ?><?cs
+      elif:tag.kind == "@range" ?><?cs call:dump_range(tag) ?><?cs
+      elif:tag.kind == "@intDef" ?><?cs call:dump_int_def(tag) ?><?cs
+      elif:tag.kind == "@permission" ?><?cs call:dump_permission(tag) ?><?cs
+      /if ?><?cs
+  /each ?></p><?cs
+/def ?><?cs
+
+# Print output for @range tags ?><?cs
+def:dump_range(tag) ?><?cs
+  if:tag.from && tag.to ?>Value is between <?cs var:tag.from ?> and <?cs var:tag.to ?> inclusive.<?cs
+  elif:tag.from ?>Value is <?cs var:tag.from ?> or greater.<?cs
+  elif:tag.to ?>Value is <?cs var:tag.to ?> or less.<?cs
+  /if ?><?cs
+/def ?><?cs
+
+# Print output for @intDef tags ?><?cs
+def:dump_int_def(tag) ?><?cs
+  if:tag.flag ?><?cs
+    if:subcount(tag.values) > 1 ?>Value is either <code>0</code> or combination of <?cs
+    else ?>Value is either <code>0</code> or <?cs
+    /if ?><?cs
+  else ?>Value is <?cs
+  /if ?><?cs
+  loop:i = #0, subcount(tag.values), #1 ?><?cs
+    with:val = tag.values[i] ?><?cs
+      call:tag_list(val.commentTags) ?><?cs
+      if i == subcount(tag.values) - 2 ?> or <?cs
+      elif:i < subcount(tag.values) - 2 ?>, <?cs
+      /if ?><?cs
+    /with ?><?cs
+  /loop ?>.<?cs
+/def ?><?cs
+
+# Print output for @permission tags ?><?cs
+def:dump_permission(tag) ?>Requires the <?cs
+  loop:i = #0, subcount(tag.values), #1 ?><?cs
+    with:val = tag.values[i] ?><?cs
+      call:tag_list(val.commentTags) ?><?cs
+      if i == subcount(tag.values) - 2 ?><?cs
+        if tag.any ?> or <?cs
+        else ?> and <?cs
+        /if ?><?cs
+      elif:i < subcount(tag.values) - 2 ?>, <?cs
+      /if ?><?cs
+    /with ?><?cs
+  /loop ?><?cs
+  if subcount(tag.values) > 1 ?> permissions.<?cs
+  else ?> permission.<?cs
+  /if ?><?cs
 /def ?>

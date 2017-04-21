@@ -19,6 +19,7 @@ package com.google.doclava;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AuxUtils {
   private static final int TYPE_METHOD = 0;
@@ -50,6 +51,7 @@ public class AuxUtils {
   private static TagInfo[] auxTags(int type, List<AnnotationInstanceInfo> annotations) {
     ArrayList<TagInfo> tags = new ArrayList<>();
     for (AnnotationInstanceInfo annotation : annotations) {
+      // Blindly include docs requested by annotations
       ParsedTagInfo[] docTags = ParsedTagInfo.EMPTY_ARRAY;
       switch (type) {
         case TYPE_METHOD:
@@ -67,11 +69,55 @@ public class AuxUtils {
         tags.add(docTag);
       }
 
-      // IntDef below belongs in return docs, not in method body
+      // Document required permissions
+      if ((type == TYPE_METHOD || type == TYPE_FIELD)
+          && annotation.type().qualifiedNameMatches("android", "annotation.RequiresPermission")) {
+        ArrayList<AnnotationValueInfo> values = null;
+        boolean any = false;
+        for (AnnotationValueInfo val : annotation.elementValues()) {
+          switch (val.element().name()) {
+            case "value":
+              values = new ArrayList<AnnotationValueInfo>();
+              values.add(val);
+              break;
+            case "allOf":
+              values = (ArrayList<AnnotationValueInfo>) val.value();
+              break;
+            case "anyOf":
+              any = true;
+              values = (ArrayList<AnnotationValueInfo>) val.value();
+              break;
+          }
+        }
+        if (values == null || values.isEmpty()) continue;
+
+        ClassInfo permClass = annotation.type().findClass("android.Manifest.permission");
+        ArrayList<TagInfo> valueTags = new ArrayList<>();
+        for (AnnotationValueInfo value : values) {
+          final String expected = String.valueOf(value.value());
+          for (FieldInfo field : permClass.fields()) {
+            if (field.isHiddenOrRemoved()) continue;
+            if (String.valueOf(field.constantValue()).equals(expected)) {
+              valueTags.add(new ParsedTagInfo("", "",
+                  "{@link " + permClass.qualifiedName() + "#" + field.name() + "}", null,
+                  SourcePositionInfo.UNKNOWN));
+            }
+          }
+        }
+
+        Map<String, String> args = new HashMap<>();
+        if (any) args.put("any", "true");
+        tags.add(new AuxTagInfo("@permission", "@permission", SourcePositionInfo.UNKNOWN, args,
+            valueTags.toArray(TagInfo.getArray(valueTags.size()))));
+      }
+
+      // The remaining annotations below always appear on return docs, and
+      // should not be included in the method body
       if (type == TYPE_METHOD) continue;
 
-      if (annotation.type().qualifiedName().equals("android.annotation.IntRange")
-          || annotation.type().qualifiedName().equals("android.annotation.FloatRange")) {
+      // Document value ranges
+      if (annotation.type().qualifiedNameMatches("android", "annotation.IntRange")
+          || annotation.type().qualifiedNameMatches("android", "annotation.FloatRange")) {
         String from = null;
         String to = null;
         for (AnnotationValueInfo val : annotation.elementValues()) {
@@ -81,12 +127,17 @@ public class AuxUtils {
           }
         }
         if (from != null || to != null) {
-          tags.add(new RangeTagInfo(SourcePositionInfo.UNKNOWN, from, to));
+          Map<String, String> args = new HashMap<>();
+          if (from != null) args.put("from", from);
+          if (to != null) args.put("to", to);
+          tags.add(new AuxTagInfo("@range", "@range", SourcePositionInfo.UNKNOWN, args,
+              TagInfo.EMPTY_ARRAY));
         }
       }
 
+      // Document integer values
       for (AnnotationInstanceInfo inner : annotation.type().annotations()) {
-        if (inner.type().qualifiedName().equals("android.annotation.IntDef")) {
+        if (inner.type().qualifiedNameMatches("android", "annotation.IntDef")) {
           ArrayList<AnnotationValueInfo> prefixes = null;
           ArrayList<AnnotationValueInfo> values = null;
           boolean flag = false;
@@ -105,8 +156,7 @@ public class AuxUtils {
           final ClassInfo clazz = annotation.type().containingClass();
           final HashMap<String, FieldInfo> candidates = new HashMap<>();
           for (FieldInfo field : clazz.fields()) {
-            if (field.isHiddenOrRemoved())
-              continue;
+            if (field.isHiddenOrRemoved()) continue;
             for (AnnotationValueInfo prefix : prefixes) {
               if (field.name().startsWith(String.valueOf(prefix.value()))) {
                 candidates.put(String.valueOf(field.constantValue()), field);
@@ -117,7 +167,7 @@ public class AuxUtils {
           ArrayList<TagInfo> valueTags = new ArrayList<>();
           for (AnnotationValueInfo value : values) {
             final String expected = String.valueOf(value.value());
-            final FieldInfo field = candidates.get(expected);
+            final FieldInfo field = candidates.remove(expected);
             if (field != null) {
               valueTags.add(new ParsedTagInfo("", "",
                   "{@link " + clazz.qualifiedName() + "#" + field.name() + "}", null,
@@ -126,7 +176,9 @@ public class AuxUtils {
           }
 
           if (!valueTags.isEmpty()) {
-            tags.add(new IntDefTagInfo(SourcePositionInfo.UNKNOWN, flag,
+            Map<String, String> args = new HashMap<>();
+            if (flag) args.put("flag", "true");
+            tags.add(new AuxTagInfo("@intDef", "@intDef", SourcePositionInfo.UNKNOWN, args,
                 valueTags.toArray(TagInfo.getArray(valueTags.size()))));
           }
         }
@@ -142,7 +194,7 @@ public class AuxUtils {
 
   private static boolean hasSuppress(List<AnnotationInstanceInfo> annotations) {
     for (AnnotationInstanceInfo annotation : annotations) {
-      if (annotation.type().qualifiedName().equals("android.annotation.SuppressAutoDoc")) {
+      if (annotation.type().qualifiedNameMatches("android", "annotation.SuppressAutoDoc")) {
         return true;
       }
     }
