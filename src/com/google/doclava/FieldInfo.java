@@ -119,7 +119,8 @@ public class FieldInfo extends MemberInfo {
       // Note: We only do this for "included" classes (i.e. those we have source code for); we do
       // not have comments for classes from .class files but we do know whether a field is marked
       // as @Deprecated.
-      if (mContainingClass.isIncluded() && commentDeprecated != annotationDeprecated) {
+      if (mContainingClass.isIncluded() && !isHiddenOrRemoved()
+          && commentDeprecated != annotationDeprecated) {
         Errors.error(Errors.DEPRECATION_MISMATCH, position(), "Field "
             + mContainingClass.qualifiedName() + "." + name()
             + ": @Deprecated annotation (" + (annotationDeprecated ? "" : "not ")
@@ -331,7 +332,7 @@ public class FieldInfo extends MemberInfo {
     data.setValue(base + ".anchor", anchor());
     TagInfo.makeHDF(data, base + ".shortDescr", firstSentenceTags());
     TagInfo.makeHDF(data, base + ".descr", inlineTags());
-    TagInfo.makeHDF(data, base + ".descrAux", AuxUtils.fieldAuxTags(this));
+    TagInfo.makeHDF(data, base + ".descrAux", Doclava.auxSource.fieldAuxTags(this));
     TagInfo.makeHDF(data, base + ".deprecated", comment().deprecatedTags());
     TagInfo.makeHDF(data, base + ".seeAlso", comment().seeTags());
     data.setValue(base + ".since", getSince());
@@ -397,6 +398,8 @@ public class FieldInfo extends MemberInfo {
       showAnnotations().toArray(new AnnotationInstanceInfo[showAnnotations().size()]));
 
     setFederatedReferences(data, base);
+
+    Doclava.linter.lintField(this);
   }
 
   @Override
