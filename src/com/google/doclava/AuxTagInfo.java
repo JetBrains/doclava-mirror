@@ -18,19 +18,22 @@ package com.google.doclava;
 
 import com.google.clearsilver.jsilver.data.Data;
 
-public class IntDefTagInfo extends TagInfo {
-  public static final IntDefTagInfo[] EMPTY_ARRAY = new IntDefTagInfo[0];
+import java.util.Map;
 
-  public static IntDefTagInfo[] getArray(int size) {
-      return size == 0 ? EMPTY_ARRAY : new IntDefTagInfo[size];
+public class AuxTagInfo extends TagInfo {
+  public static final AuxTagInfo[] EMPTY_ARRAY = new AuxTagInfo[0];
+
+  public static AuxTagInfo[] getArray(int size) {
+      return size == 0 ? EMPTY_ARRAY : new AuxTagInfo[size];
   }
 
-  private boolean mFlag;
+  private Map<String, String> mArgs;
   private TagInfo[] mValues;
 
-  IntDefTagInfo(SourcePositionInfo position, boolean flag, TagInfo[] values) {
-    super("@intDef", "@intDef", "", position);
-    mFlag = flag;
+  AuxTagInfo(String name, String kind, SourcePositionInfo position, Map<String, String> args,
+      TagInfo[] values) {
+    super(name, kind, "", position);
+    mArgs = args;
     mValues = values;
   }
 
@@ -41,8 +44,8 @@ public class IntDefTagInfo extends TagInfo {
   @Override
   public void makeHDF(Data data, String base) {
     super.makeHDF(data, base);
-    if (mFlag) {
-      data.setValue(base + ".flag", "true");
+    for (Map.Entry<String, String> entry : mArgs.entrySet()) {
+      data.setValue(base + "." + entry.getKey(), entry.getValue());
     }
     TagInfo.makeHDF(data, base + ".values", valuesTags());
   }
