@@ -50,16 +50,29 @@ public class Errors {
     @Override
     public String toString() {
       StringBuilder res = new StringBuilder();
-      res.append("\033[1m").append(pos.toString()).append(": ");
-      switch (error.getLevel()) {
-        case LINT: res.append("\033[36mlint: "); break;
-        case WARNING: res.append("\033[33mwarning: "); break;
-        case ERROR: res.append("\033[31merror: "); break;
-        default: break;
+      if (Doclava.android) {
+        res.append("\033[1m").append(pos.toString()).append(": ");
+        switch (error.getLevel()) {
+          case LINT: res.append("\033[36mlint: "); break;
+          case WARNING: res.append("\033[33mwarning: "); break;
+          case ERROR: res.append("\033[31merror: "); break;
+          default: break;
+        }
+        res.append("\033[0m");
+        res.append(msg);
+        res.append(" [").append(error.code).append("]");
+      } else {
+        // Sigh, some people are parsing the old format.
+        res.append(pos.toString()).append(": ");
+        switch (error.getLevel()) {
+          case LINT: res.append("lint "); break;
+          case WARNING: res.append("warning "); break;
+          case ERROR: res.append("error "); break;
+          default: break;
+        }
+        res.append(error.code).append(": ");
+        res.append(msg);
       }
-      res.append("\033[0m");
-      res.append(msg);
-      res.append(" [").append(error.code).append("]");
       return res.toString();
     }
     
