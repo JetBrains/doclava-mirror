@@ -82,7 +82,7 @@ if:devsite ?>
             elif:samples ?>/samples<?cs
             elif:reference ?>/reference<?cs
             elif:downloads ?>/downloads<?cs /if ?><?cs
-          elif:library.root ?><?cs var:library.root ?><?cs
+          elif:library.root ?>/reference/<?cs var:library.root ?><?cs
           else ?><?cs
             if:(guide||develop||training||reference||tools||sdk||samples) ?><?cs
               if:guide ?>/guide<?cs
