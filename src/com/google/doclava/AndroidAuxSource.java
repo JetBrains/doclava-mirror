@@ -21,29 +21,33 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AuxUtils {
+public class AndroidAuxSource implements AuxSource {
   private static final int TYPE_METHOD = 0;
   private static final int TYPE_FIELD = 1;
   private static final int TYPE_PARAM = 2;
   private static final int TYPE_RETURN = 3;
 
-  public static TagInfo[] fieldAuxTags(FieldInfo field) {
+  @Override
+  public TagInfo[] fieldAuxTags(FieldInfo field) {
     if (hasSuppress(field)) return TagInfo.EMPTY_ARRAY;
     return auxTags(TYPE_FIELD, field.annotations());
   }
 
-  public static TagInfo[] methodAuxTags(MethodInfo method) {
+  @Override
+  public TagInfo[] methodAuxTags(MethodInfo method) {
     if (hasSuppress(method)) return TagInfo.EMPTY_ARRAY;
     return auxTags(TYPE_METHOD, method.annotations());
   }
 
-  public static TagInfo[] paramAuxTags(MethodInfo method, ParameterInfo param) {
+  @Override
+  public TagInfo[] paramAuxTags(MethodInfo method, ParameterInfo param) {
     if (hasSuppress(method)) return TagInfo.EMPTY_ARRAY;
     if (hasSuppress(param.annotations())) return TagInfo.EMPTY_ARRAY;
     return auxTags(TYPE_PARAM, param.annotations());
   }
 
-  public static TagInfo[] returnAuxTags(MethodInfo method) {
+  @Override
+  public TagInfo[] returnAuxTags(MethodInfo method) {
     if (hasSuppress(method)) return TagInfo.EMPTY_ARRAY;
     return auxTags(TYPE_RETURN, method.annotations());
   }

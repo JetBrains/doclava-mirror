@@ -115,6 +115,8 @@ public class Doclava {
   public static Map<String, String> annotationDocumentationMap = null;
   public static boolean referenceOnly = false;
   public static boolean staticOnly = false;
+  public static AuxSource auxSource = new EmptyAuxSource();
+  public static Linter linter = new EmptyLinter();
 
   public static JSilver jSilver = null;
 
@@ -220,13 +222,18 @@ public class Doclava {
         Doclava.title = a[1];
       } else if (a[0].equals("-werror")) {
         Errors.setWarningsAreErrors(true);
-      } else if (a[0].equals("-error") || a[0].equals("-warning") || a[0].equals("-hide")) {
+      } else if (a[0].equals("-lerror")) {
+        Errors.setLintsAreErrors(true);
+      } else if (a[0].equals("-error") || a[0].equals("-warning") || a[0].equals("-lint")
+          || a[0].equals("-hide")) {
         try {
           int level = -1;
           if (a[0].equals("-error")) {
             level = Errors.ERROR;
           } else if (a[0].equals("-warning")) {
             level = Errors.WARNING;
+          } else if (a[0].equals("-lint")) {
+            level = Errors.LINT;
           } else if (a[0].equals("-hide")) {
             level = Errors.HIDDEN;
           }
@@ -338,6 +345,9 @@ public class Doclava {
         if (yamlNavFile == null) {
           yamlNavFile = "_book.yaml";
         }
+      } else if (a[0].equals("-android")) {
+        auxSource = new AndroidAuxSource();
+        linter = new AndroidLinter();
       }
     }
 
@@ -790,6 +800,9 @@ public class Doclava {
       return 1;
     }
     if (option.equals("-atLinksNavtree")) {
+      return 1;
+    }
+    if (option.equals("-android")) {
       return 1;
     }
     return 0;
