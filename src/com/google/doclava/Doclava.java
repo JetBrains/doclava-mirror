@@ -117,6 +117,7 @@ public class Doclava {
   public static boolean staticOnly = false;
   public static AuxSource auxSource = new EmptyAuxSource();
   public static Linter linter = new EmptyLinter();
+  public static boolean android = false;
 
   public static JSilver jSilver = null;
 
@@ -350,6 +351,7 @@ public class Doclava {
       } else if (a[0].equals("-android")) {
         auxSource = new AndroidAuxSource();
         linter = new AndroidLinter();
+        android = true;
       }
     }
 
