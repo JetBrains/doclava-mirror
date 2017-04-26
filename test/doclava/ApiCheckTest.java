@@ -32,7 +32,7 @@ public class ApiCheckTest extends TestCase {
    */
   public void setUp() {
     Errors.clearErrors();
-    for (Errors.Error error : Errors.ERRORS) {
+    for (Errors.Error error : Errors.sErrors) {
       Errors.setErrorLevel(error.code, Errors.ERROR);
     }
   }
