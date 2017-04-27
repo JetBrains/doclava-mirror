@@ -371,6 +371,12 @@ public class Doclava {
       for (String tmpl : templates) {
         resourceLoaders.add(new FileSystemResourceLoader(tmpl));
       }
+      // If no custom template path is provided, and this is a devsite build,
+      // then use the bundled templates-sdk/ files by default
+      if (templates.isEmpty() && USE_DEVSITE_LOCALE_OUTPUT_PATHS) {
+        resourceLoaders.add(new ClassResourceLoader(Doclava.class, "/assets/templates-sdk"));
+        System.out.println("\n#########  OK, Using templates-sdk ############\n");
+      }
 
       templates = ClearPage.getBundledTemplateDirs();
       for (String tmpl : templates) {
