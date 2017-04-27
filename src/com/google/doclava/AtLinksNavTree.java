@@ -47,7 +47,7 @@ public class AtLinksNavTree {
   * }</pre>
   *
   * @param dir The directory path to prepend to the output path if the generated navtree is for
-  *        the /support/test or /support/wearable reference docs.
+  *        one the a supplemental library references (such as the wearable support library)
   */
   public static void writeAtLinksNavTree(String dir) {
     StringBuilder buf = new StringBuilder();
@@ -60,10 +60,8 @@ public class AtLinksNavTree {
     data.setValue("navtree", buf.toString());
 
     String output_path;
-    if (Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS && Doclava.testSupportRef) {
-      output_path = dir + Doclava.testSupportPath + "at_links_navtree.json";
-    } else if (Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS && Doclava.wearableSupportRef) {
-      output_path = dir + Doclava.wearableSupportPath + "at_links_navtree.json";
+    if (Doclava.USE_DEVSITE_LOCALE_OUTPUT_PATHS && (Doclava.libraryRoot != null)) {
+      output_path = dir + Doclava.libraryRoot + "at_links_navtree.json";
     } else {
       output_path = "at_links_navtree.json";
     }

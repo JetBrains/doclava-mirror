@@ -82,12 +82,9 @@ if:devsite ?>
             elif:samples ?>/samples<?cs
             elif:reference ?>/reference<?cs
             elif:downloads ?>/downloads<?cs /if ?><?cs
+          elif:library.root ?><?cs var:library.root ?><?cs
           else ?><?cs
-            if:reference.testSupport ?>/reference/android/support/test<?cs
-            elif:reference.wearableSupport ?>/reference/android/support/wearable<?cs
-            elif:reference.androidSupport ?>/reference/android/support<?cs
-            elif:reference.constraintSupport ?>/reference/android/support/constraint<?cs
-            elif:(guide||develop||training||reference||tools||sdk||samples) ?><?cs
+            if:(guide||develop||training||reference||tools||sdk||samples) ?><?cs
               if:guide ?>/guide<?cs
               elif:training ?>/training<?cs
               elif:reference ?>/reference<?cs
