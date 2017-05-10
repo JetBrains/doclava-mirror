@@ -524,9 +524,11 @@ public class TypeInfo implements Resolvable {
    */
   public static Map<String, TypeInfo> getTypeArgumentMapping(TypeInfo generic, TypeInfo typed) {
     Map<String, TypeInfo> map = new HashMap<String, TypeInfo>();
-    for (int i = 0; i < generic.typeArguments().size(); i++) {
-      if (typed.typeArguments() != null && typed.typeArguments().size() > i) {
-        map.put(generic.typeArguments().get(i).simpleTypeName(), typed.typeArguments().get(i));
+    if (generic != null && generic.typeArguments() != null) {
+      for (int i = 0; i < generic.typeArguments().size(); i++) {
+        if (typed.typeArguments() != null && typed.typeArguments().size() > i) {
+          map.put(generic.typeArguments().get(i).simpleTypeName(), typed.typeArguments().get(i));
+        }
       }
     }
     return map;

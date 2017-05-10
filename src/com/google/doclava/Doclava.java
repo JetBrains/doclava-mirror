@@ -176,6 +176,7 @@ public class Doclava {
     boolean offlineMode = false;
     String apiFile = null;
     String removedApiFile = null;
+    String exactApiFile = null;
     String debugStubsFile = "";
     HashSet<String> stubPackages = null;
     ArrayList<String> knownTagsFiles = new ArrayList<String>();
@@ -280,8 +281,9 @@ public class Doclava {
         apiFile = a[1];
       } else if (a[0].equals("-removedApi")) {
         removedApiFile = a[1];
-      }
-      else if (a[0].equals("-nodocs")) {
+      } else if (a[0].equals("-exactApi")) {
+        exactApiFile = a[1];
+      } else if (a[0].equals("-nodocs")) {
         generateDocs = false;
       } else if (a[0].equals("-noassets")) {
         includeAssets = false;
@@ -496,8 +498,10 @@ public class Doclava {
     }
 
     // Stubs
-    if (stubsDir != null || apiFile != null || proguardFile != null || removedApiFile != null) {
-      Stubs.writeStubsAndApi(stubsDir, apiFile, proguardFile, removedApiFile, stubPackages);
+    if (stubsDir != null || apiFile != null || proguardFile != null || removedApiFile != null
+        || exactApiFile != null) {
+      Stubs.writeStubsAndApi(stubsDir, apiFile, proguardFile, removedApiFile, exactApiFile,
+          stubPackages);
     }
 
     Errors.printErrors();
@@ -749,6 +753,9 @@ public class Doclava {
       return 2;
     }
     if (option.equals("-removedApi")) {
+      return 2;
+    }
+    if (option.equals("-exactApi")) {
       return 2;
     }
     if (option.equals("-nodocs")) {
