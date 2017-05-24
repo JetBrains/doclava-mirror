@@ -103,6 +103,7 @@ public class Doclava {
   public static HashSet<String> knownTags = new HashSet<String>();
   public static FederationTagger federationTagger = new FederationTagger();
   public static Set<String> showAnnotations = new HashSet<String>();
+  public static Set<String> hideAnnotations = new HashSet<String>();
   public static boolean showAnnotationOverridesVisibility = false;
   public static Set<String> hiddenPackages = new HashSet<String>();
   public static boolean includeAssets = true;
@@ -248,6 +249,8 @@ public class Doclava {
         keepListFile = a[1];
       } else if (a[0].equals("-showAnnotation")) {
         showAnnotations.add(a[1]);
+      } else if (a[0].equals("-hideAnnotation")) {
+        hideAnnotations.add(a[1]);
       } else if (a[0].equals("-showAnnotationOverridesVisibility")) {
         showAnnotationOverridesVisibility = true;
       } else if (a[0].equals("-hidePackage")) {
