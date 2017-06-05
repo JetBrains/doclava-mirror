@@ -17,6 +17,7 @@
 package com.google.doclava;
 
 public interface AuxSource {
+  public TagInfo[] classAuxTags(ClassInfo clazz);
   public TagInfo[] fieldAuxTags(FieldInfo field);
   public TagInfo[] methodAuxTags(MethodInfo method);
   public TagInfo[] paramAuxTags(MethodInfo method, ParameterInfo param);
@@ -24,6 +25,11 @@ public interface AuxSource {
 }
 
 class EmptyAuxSource implements AuxSource {
+  @Override
+  public TagInfo[] classAuxTags(ClassInfo clazz) {
+    return TagInfo.EMPTY_ARRAY;
+  }
+
   @Override
   public TagInfo[] fieldAuxTags(FieldInfo field) {
     return TagInfo.EMPTY_ARRAY;

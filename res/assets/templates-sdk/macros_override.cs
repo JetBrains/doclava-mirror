@@ -59,6 +59,7 @@ def:aux_tag_list(tags) ?><?cs
       elif:tag.kind == "@range" ?><?cs call:dump_range(tag) ?><?cs
       elif:tag.kind == "@intDef" ?><?cs call:dump_int_def(tag) ?><?cs
       elif:tag.kind == "@permission" ?><?cs call:dump_permission(tag) ?><?cs
+      elif:tag.kind == "@service" ?><?cs call:dump_service(tag) ?><?cs
       /if ?><?cs
   /each ?></p><?cs
 /def ?><?cs
@@ -105,4 +106,14 @@ def:dump_permission(tag) ?>Requires the <?cs
   if subcount(tag.values) > 1 ?> permissions.<?cs
   else ?> permission.<?cs
   /if ?><?cs
+/def ?>
+
+# Print output for @service tags ?><?cs
+def:dump_service(tag) ?>Instances of this class must be obtained using <?cs
+  loop:i = #0, subcount(tag.values) - 1, #2 ?><?cs
+    call:tag_list(tag.values[i].commentTags) ?> with the argument <?cs
+    call:tag_list(tag.values[i+1].commentTags) ?><?cs
+    if i < subcount(tag.values) - 2 ?> or <?cs
+    /if ?><?cs
+  /loop ?>.<?cs
 /def ?>

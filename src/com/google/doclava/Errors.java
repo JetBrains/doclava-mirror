@@ -81,6 +81,26 @@ public class Errors {
     }
   }
 
+  public static void error(Error error, MemberInfo mi, String text) {
+    if (error.getLevel() == Errors.LINT) {
+      final String ident = "Doclava" + error.code;
+      for (AnnotationInstanceInfo a : mi.annotations()) {
+        if (a.type().qualifiedNameMatches("android", "annotation.SuppressLint")) {
+          for (AnnotationValueInfo val : a.elementValues()) {
+            if ("value".equals(val.element().name())) {
+              for (AnnotationValueInfo inner : (ArrayList<AnnotationValueInfo>) val.value()) {
+                if (ident.equals(String.valueOf(inner.value()))) {
+                  return;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    error(error, mi.position(), text);
+  }
+
   public static void error(Error error, SourcePositionInfo where, String text) {
     if (error.getLevel() == HIDDEN) {
       return;

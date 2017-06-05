@@ -1292,6 +1292,40 @@ public class Stubs {
       return hasWrittenPackageHead;
     }
 
+    // Look for Android @SystemApi exposed outside the normal SDK; we require
+    // that they're protected with a system permission.
+    if (Doclava.android && Doclava.showAnnotations.contains("android.annotation.SystemApi")
+        && !(predicate instanceof RemovedPredicate)) {
+      boolean systemService = false;
+      for (AnnotationInstanceInfo a : cl.annotations()) {
+        if (a.type().qualifiedNameMatches("android", "annotation.SystemService")) {
+          systemService = true;
+        }
+      }
+      if (systemService) {
+        for (MethodInfo mi : methods) {
+          boolean hasPermission = false;
+          for (AnnotationInstanceInfo a : mi.annotations()) {
+            if (a.type().qualifiedNameMatches("android", "annotation.RequiresPermission")) {
+              hasPermission = true;
+            }
+          }
+          for (ParameterInfo pi : mi.parameters()) {
+            for (AnnotationInstanceInfo a : pi.annotations()) {
+              if (a.type().qualifiedNameMatches("android", "annotation.RequiresPermission")) {
+                hasPermission = true;
+              }
+            }
+          }
+          if (!hasPermission) {
+            Errors.error(Errors.REQUIRES_PERMISSION, mi,
+                "Method '" + mi.name() + "' exposed as @SystemApi must be"
+                    + " protected with a system permission.");
+          }
+        }
+      }
+    }
+
     if (!hasWrittenPackageHead) {
       hasWrittenPackageHead = true;
       apiWriter.print("package ");
