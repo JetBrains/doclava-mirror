@@ -1296,7 +1296,7 @@ public class Stubs {
     // that they're protected with a system permission.
     if (Doclava.android && Doclava.showAnnotations.contains("android.annotation.SystemApi")
         && !(predicate instanceof RemovedPredicate)) {
-      boolean systemService = false;
+      boolean systemService = "android.content.pm.PackageManager".equals(cl.qualifiedName());
       for (AnnotationInstanceInfo a : cl.annotations()) {
         if (a.type().qualifiedNameMatches("android", "annotation.SystemService")) {
           systemService = true;
@@ -1304,24 +1304,7 @@ public class Stubs {
       }
       if (systemService) {
         for (MethodInfo mi : methods) {
-          boolean hasPermission = false;
-          for (AnnotationInstanceInfo a : mi.annotations()) {
-            if (a.type().qualifiedNameMatches("android", "annotation.RequiresPermission")) {
-              hasPermission = true;
-            }
-          }
-          for (ParameterInfo pi : mi.parameters()) {
-            for (AnnotationInstanceInfo a : pi.annotations()) {
-              if (a.type().qualifiedNameMatches("android", "annotation.RequiresPermission")) {
-                hasPermission = true;
-              }
-            }
-          }
-          if (!hasPermission) {
-            Errors.error(Errors.REQUIRES_PERMISSION, mi,
-                "Method '" + mi.name() + "' exposed as @SystemApi must be"
-                    + " protected with a system permission.");
-          }
+          checkSystemPermissions(mi);
         }
       }
     }
@@ -1391,6 +1374,62 @@ public class Stubs {
 
     apiWriter.print("  }\n\n");
     return hasWrittenPackageHead;
+  }
+
+  private static void checkSystemPermissions(MethodInfo mi) {
+    boolean hasAnnotation = false;
+    for (AnnotationInstanceInfo a : mi.annotations()) {
+      if (a.type().qualifiedNameMatches("android", "annotation.RequiresPermission")) {
+        hasAnnotation = true;
+        for (AnnotationValueInfo val : a.elementValues()) {
+          ArrayList<AnnotationValueInfo> values = null;
+          boolean any = false;
+          switch (val.element().name()) {
+            case "value":
+              values = new ArrayList<AnnotationValueInfo>();
+              values.add(val);
+              break;
+            case "allOf":
+              values = (ArrayList<AnnotationValueInfo>) val.value();
+              break;
+            case "anyOf":
+              any = true;
+              values = (ArrayList<AnnotationValueInfo>) val.value();
+              break;
+          }
+
+          ArrayList<String> system = new ArrayList<>();
+          ArrayList<String> nonSystem = new ArrayList<>();
+          for (AnnotationValueInfo value : values) {
+            final String perm = String.valueOf(value.value());
+            final String level = Doclava.manifestPermissions.getOrDefault(perm, null);
+            if (level == null) {
+              Errors.error(Errors.REMOVED_FIELD, mi.position(),
+                  "Permission '" + perm + "' is not defined by AndroidManifest.xml.");
+              continue;
+            }
+            if (level.contains("normal") || level.contains("dangerous")
+                || level.contains("ephemeral")) {
+              nonSystem.add(perm);
+            } else {
+              system.add(perm);
+            }
+          }
+
+          if (system.isEmpty() && nonSystem.isEmpty()) {
+            hasAnnotation = false;
+          } else if ((any && !nonSystem.isEmpty()) || (!any && system.isEmpty())) {
+            Errors.error(Errors.REQUIRES_PERMISSION, mi, "Method '" + mi.name()
+                + "' must be protected with a system permission; it currently"
+                + " allows non-system callers holding " + nonSystem.toString());
+          }
+        }
+      }
+    }
+    if (!hasAnnotation) {
+      Errors.error(Errors.REQUIRES_PERMISSION, mi, "Method '" + mi.name()
+        + "' must be protected with a system permission.");
+    }
   }
 
   public static void writeApi(PrintStream apiWriter, Collection<PackageInfo> pkgs) {
