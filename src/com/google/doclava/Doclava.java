@@ -28,6 +28,7 @@ import com.sun.javadoc.*;
 import java.util.*;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.io.*;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Array;
@@ -119,6 +120,8 @@ public class Doclava {
   public static AuxSource auxSource = new EmptyAuxSource();
   public static Linter linter = new EmptyLinter();
   public static boolean android = false;
+  public static String manifestFile = null;
+  public static Map<String, String> manifestPermissions = new HashMap<>();
 
   public static JSilver jSilver = null;
 
@@ -355,10 +358,15 @@ public class Doclava {
         auxSource = new AndroidAuxSource();
         linter = new AndroidLinter();
         android = true;
+      } else if (a[0].equals("-manifest")) {
+        manifestFile = a[1];
       }
     }
 
     if (!readKnownTagsFiles(knownTags, knownTagsFiles)) {
+      return false;
+    }
+    if (!readManifest()) {
       return false;
     }
 
@@ -594,6 +602,32 @@ public class Doclava {
         return true;
     }
 
+  private static boolean readManifest() {
+    manifestPermissions.clear();
+    if (manifestFile == null) {
+      return true;
+    }
+    try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(manifestFile));
+        ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+      byte[] buffer = new byte[1024];
+      int count;
+      while ((count = in.read(buffer)) != -1) {
+        out.write(buffer, 0, count);
+      }
+      final Matcher m = Pattern.compile("(?s)<permission "
+          + "[^>]*android:name=\"([^\">]+)\""
+          + "[^>]*android:protectionLevel=\"([^\">]+)\"").matcher(out.toString());
+      while (m.find()) {
+        manifestPermissions.put(m.group(1), m.group(2));
+      }
+    } catch (IOException e) {
+      Errors.error(Errors.PARSE_ERROR, (SourcePositionInfo) null,
+          "Failed to parse " + manifestFile + ": " + e);
+      return false;
+    }
+    return true;
+  }
+
   public static String escape(String s) {
     if (escapeChars.size() == 0) {
       return s;
@@ -816,6 +850,9 @@ public class Doclava {
     }
     if (option.equals("-android")) {
       return 1;
+    }
+    if (option.equals("-manifest")) {
+      return 2;
     }
     return 0;
   }
