@@ -1199,12 +1199,17 @@ public class Stubs {
   public static class RemovedPredicate implements Predicate<MemberInfo> {
     @Override
     public boolean test(MemberInfo member) {
-      final ClassInfo clazz = member.containingClass();
-      final boolean removed = clazz.isRemoved() || member.isRemoved();
-      final boolean clazzVisible = clazz.isPublic() || clazz.isProtected();
-      final boolean memberVisible = member.isPublic() || member.isProtected();
+      ClassInfo clazz = member.containingClass();
 
-      if (removed && clazzVisible && memberVisible) {
+      boolean visible = member.isPublic() || member.isProtected();
+      boolean removed = member.isRemoved();
+      while (clazz != null) {
+        visible &= clazz.isPublic() || clazz.isProtected();
+        removed |= clazz.isRemoved();
+        clazz = clazz.containingClass();
+      }
+
+      if (visible && removed) {
         if (member instanceof MethodInfo) {
           final MethodInfo method = (MethodInfo) member;
           return (method.findOverriddenMethod(method.name(), method.signature()) == null);
@@ -1220,13 +1225,19 @@ public class Stubs {
   public static class ExactPredicate implements Predicate<MemberInfo> {
     @Override
     public boolean test(MemberInfo member) {
-      final ClassInfo clazz = member.containingClass();
-      final boolean hasShowAnnotation = member.hasShowAnnotation()
-          || member.containingClass().hasShowAnnotation();
-      final boolean clazzVisible = clazz.isPublic() || clazz.isProtected();
-      final boolean memberVisible = member.isPublic() || member.isProtected();
+      ClassInfo clazz = member.containingClass();
 
-      if (hasShowAnnotation && !member.isHiddenOrRemoved() && clazzVisible && memberVisible) {
+      boolean visible = member.isPublic() || member.isProtected();
+      boolean hasShowAnnotation = member.hasShowAnnotation();
+      boolean hiddenOrRemoved = member.isHiddenOrRemoved();
+      while (clazz != null) {
+        visible &= clazz.isPublic() || clazz.isProtected();
+        hasShowAnnotation |= clazz.hasShowAnnotation();
+        hiddenOrRemoved |= clazz.isHiddenOrRemoved();
+        clazz = clazz.containingClass();
+      }
+
+      if (visible && hasShowAnnotation && !hiddenOrRemoved) {
         if (member instanceof MethodInfo) {
           final MethodInfo method = (MethodInfo) member;
           return (method.findOverriddenMethod(method.name(), method.signature()) == null);
