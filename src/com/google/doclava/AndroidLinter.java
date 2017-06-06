@@ -45,18 +45,18 @@ public class AndroidLinter implements Linter {
         if (text.contains("Broadcast Action:")
             || (text.contains("protected intent") && text.contains("system"))) {
           if (!hasBehavior) {
-            Errors.error(Errors.BROADCAST_BEHAVIOR, field.position(),
+            Errors.error(Errors.BROADCAST_BEHAVIOR, field,
                 "Field '" + field.name() + "' is missing @BroadcastBehavior");
           }
           if (!hasSdkConstant) {
-            Errors.error(Errors.SDK_CONSTANT, field.position(), "Field '" + field.name()
+            Errors.error(Errors.SDK_CONSTANT, field, "Field '" + field.name()
                 + "' is missing @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)");
           }
         }
 
         if (text.contains("Activity Action:")) {
           if (!hasSdkConstant) {
-            Errors.error(Errors.SDK_CONSTANT, field.position(), "Field '" + field.name()
+            Errors.error(Errors.SDK_CONSTANT, field, "Field '" + field.name()
                 + "' is missing @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)");
           }
         }
@@ -95,7 +95,7 @@ public class AndroidLinter implements Linter {
             String perm = String.valueOf(value.value());
             if (perm.indexOf('.') >= 0) perm = perm.substring(perm.lastIndexOf('.') + 1);
             if (text.contains(perm)) {
-              Errors.error(Errors.REQUIRES_PERMISSION, method.position(), "Method '" + method.name()
+              Errors.error(Errors.REQUIRES_PERMISSION, method, "Method '" + method.name()
                   + "' documentation mentions permissions already declared by @RequiresPermission");
             }
           }
@@ -103,7 +103,7 @@ public class AndroidLinter implements Linter {
       }
       if (text.contains("android.Manifest.permission") || text.contains("android.permission.")) {
         if (!hasAnnotation) {
-          Errors.error(Errors.REQUIRES_PERMISSION, method.position(), "Method '" + method.name()
+          Errors.error(Errors.REQUIRES_PERMISSION, method, "Method '" + method.name()
               + "' documentation mentions permissions without declaring @RequiresPermission");
         }
       }

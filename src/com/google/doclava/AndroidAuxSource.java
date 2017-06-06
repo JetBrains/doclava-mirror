@@ -22,10 +22,57 @@ import java.util.List;
 import java.util.Map;
 
 public class AndroidAuxSource implements AuxSource {
-  private static final int TYPE_METHOD = 0;
-  private static final int TYPE_FIELD = 1;
+  private static final int TYPE_FIELD = 0;
+  private static final int TYPE_METHOD = 1;
   private static final int TYPE_PARAM = 2;
   private static final int TYPE_RETURN = 3;
+
+  @Override
+  public TagInfo[] classAuxTags(ClassInfo clazz) {
+    if (hasSuppress(clazz.annotations())) return TagInfo.EMPTY_ARRAY;
+    ArrayList<TagInfo> tags = new ArrayList<>();
+    for (AnnotationInstanceInfo annotation : clazz.annotations()) {
+      // Document system services
+      if (annotation.type().qualifiedNameMatches("android", "annotation.SystemService")) {
+        ArrayList<TagInfo> valueTags = new ArrayList<>();
+        valueTags
+            .add(new ParsedTagInfo("", "",
+                "{@link android.content.Context#getSystemService(Class)"
+                    + " Context.getSystemService(Class)}",
+                null, SourcePositionInfo.UNKNOWN));
+        valueTags.add(new ParsedTagInfo("", "",
+            "{@code " + clazz.name() + ".class}", null,
+            SourcePositionInfo.UNKNOWN));
+
+        ClassInfo contextClass = annotation.type().findClass("android.content.Context");
+        for (AnnotationValueInfo val : annotation.elementValues()) {
+          switch (val.element().name()) {
+            case "value":
+              final String expected = String.valueOf(val.value());
+              for (FieldInfo field : contextClass.fields()) {
+                if (field.isHiddenOrRemoved()) continue;
+                if (String.valueOf(field.constantValue()).equals(expected)) {
+                  valueTags.add(new ParsedTagInfo("", "",
+                      "{@link android.content.Context#getSystemService(String)"
+                          + " Context.getSystemService(String)}",
+                      null, SourcePositionInfo.UNKNOWN));
+                  valueTags.add(new ParsedTagInfo("", "",
+                      "{@link android.content.Context#" + field.name()
+                          + " Context." + field.name() + "}",
+                      null, SourcePositionInfo.UNKNOWN));
+                }
+              }
+              break;
+          }
+        }
+
+        Map<String, String> args = new HashMap<>();
+        tags.add(new AuxTagInfo("@service", "@service", SourcePositionInfo.UNKNOWN, args,
+            valueTags.toArray(TagInfo.getArray(valueTags.size()))));
+      }
+    }
+    return tags.toArray(TagInfo.getArray(tags.size()));
+  }
 
   @Override
   public TagInfo[] fieldAuxTags(FieldInfo field) {

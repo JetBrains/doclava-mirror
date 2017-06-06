@@ -319,6 +319,10 @@ if:subcount(class.subclasses.direct) && !class.subclasses.hidden ?>
   <p><?cs call:tag_list(class.descr) ?></p>
 <?cs /if ?>
 
+<?cs if:subcount(class.descrAux) ?>
+  <?cs call:aux_tag_list(class.descrAux) ?>
+<?cs /if ?>
+
 <?cs call:see_also_tags(class.seeAlso) ?>
 <?cs
 #################
