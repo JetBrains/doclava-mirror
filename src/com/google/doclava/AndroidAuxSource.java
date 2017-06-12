@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class AndroidAuxSource implements AuxSource {
   private static final int TYPE_FIELD = 0;
@@ -77,31 +78,44 @@ public class AndroidAuxSource implements AuxSource {
   @Override
   public TagInfo[] fieldAuxTags(FieldInfo field) {
     if (hasSuppress(field)) return TagInfo.EMPTY_ARRAY;
-    return auxTags(TYPE_FIELD, field.annotations());
+    return auxTags(TYPE_FIELD, field.annotations(), toString(field.inlineTags()));
   }
 
   @Override
   public TagInfo[] methodAuxTags(MethodInfo method) {
     if (hasSuppress(method)) return TagInfo.EMPTY_ARRAY;
-    return auxTags(TYPE_METHOD, method.annotations());
+    return auxTags(TYPE_METHOD, method.annotations(), toString(method.inlineTags().tags()));
   }
 
   @Override
-  public TagInfo[] paramAuxTags(MethodInfo method, ParameterInfo param) {
+  public TagInfo[] paramAuxTags(MethodInfo method, ParameterInfo param, String comment) {
     if (hasSuppress(method)) return TagInfo.EMPTY_ARRAY;
     if (hasSuppress(param.annotations())) return TagInfo.EMPTY_ARRAY;
-    return auxTags(TYPE_PARAM, param.annotations());
+    return auxTags(TYPE_PARAM, param.annotations(), new String[] { comment });
   }
 
   @Override
   public TagInfo[] returnAuxTags(MethodInfo method) {
     if (hasSuppress(method)) return TagInfo.EMPTY_ARRAY;
-    return auxTags(TYPE_RETURN, method.annotations());
+    return auxTags(TYPE_RETURN, method.annotations(), toString(method.returnTags().tags()));
   }
 
-  private static TagInfo[] auxTags(int type, List<AnnotationInstanceInfo> annotations) {
+  private static TagInfo[] auxTags(int type, List<AnnotationInstanceInfo> annotations,
+      String[] comment) {
     ArrayList<TagInfo> tags = new ArrayList<>();
     for (AnnotationInstanceInfo annotation : annotations) {
+      // Ignore null-related annotations when docs already mention
+      if (annotation.type().qualifiedNameMatches("android", "annotation.NonNull")
+          || annotation.type().qualifiedNameMatches("android", "annotation.Nullable")) {
+        boolean mentionsNull = false;
+        for (String c : comment) {
+          mentionsNull |= Pattern.compile("\\bnull\\b").matcher(c).find();
+        }
+        if (mentionsNull) {
+          continue;
+        }
+      }
+
       // Blindly include docs requested by annotations
       ParsedTagInfo[] docTags = ParsedTagInfo.EMPTY_ARRAY;
       switch (type) {
@@ -236,6 +250,14 @@ public class AndroidAuxSource implements AuxSource {
       }
     }
     return tags.toArray(TagInfo.getArray(tags.size()));
+  }
+
+  private static String[] toString(TagInfo[] tags) {
+    final String[] res = new String[tags.length];
+    for (int i = 0; i < res.length; i++) {
+      res[i] = tags[i].text();
+    }
+    return res;
   }
 
   private static boolean hasSuppress(MemberInfo member) {
