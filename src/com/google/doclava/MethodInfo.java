@@ -513,7 +513,7 @@ public class MethodInfo extends MemberInfo implements AbstractMethodInfo, Resolv
         }
 
         // Collect all docs requested by annotations
-        TagInfo[] auxTags = Doclava.auxSource.paramAuxTags(this, param);
+        TagInfo[] auxTags = Doclava.auxSource.paramAuxTags(this, param, comment);
 
         // Okay, now add the collected parameter information to the method data
         mParamTags[i] =
