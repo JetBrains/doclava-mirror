@@ -415,6 +415,11 @@ public class Doclava {
 
       // don't do ref doc tasks in devsite static-only builds
       if (!DEVSITE_STATIC_ONLY) {
+        // Load additional data structures from federated sites.
+        for(FederatedSite site : federationTagger.getSites()) {
+          Converter.addApiInfo(site.apiInfo());
+        }
+
         // Apply @since tags from the XML file
         sinceTagger.tagAll(Converter.rootClasses());
 
