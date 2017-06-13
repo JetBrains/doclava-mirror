@@ -213,7 +213,7 @@ public class ApiCheckTest extends TestCase {
     assertEquals(Errors.CHANGED_TYPE, report.errors().iterator().next().error());
   }
 
-  public void testChangedFinalField() {
+  public void testAddedFinalField() {
     String[] args = { "test/api/constants.xml", "test/api/changed-final.xml" };
     ApiCheck apiCheck = new ApiCheck();
     Report report = apiCheck.checkApi(args);
@@ -221,7 +221,7 @@ public class ApiCheckTest extends TestCase {
     assertEquals(Errors.ADDED_FINAL, report.errors().iterator().next().error());
   }
 
-  public void testChangedFinalMethod() {
+  public void testAddedFinalMethod() {
     String[] args = { "test/api/constants.xml", "test/api/changed-final2.xml" };
     ApiCheck apiCheck = new ApiCheck();
     Report report = apiCheck.checkApi(args);
@@ -229,19 +229,21 @@ public class ApiCheckTest extends TestCase {
     assertEquals(Errors.ADDED_FINAL, report.errors().iterator().next().error());
   }
 
-  public void testChangedFinalClass() {
+  public void testAddedFinalClass() {
     String[] args = { "test/api/constants.xml", "test/api/changed-final3.xml" };
     ApiCheck apiCheck = new ApiCheck();
     Report report = apiCheck.checkApi(args);
-    assertEquals(1, report.errors().size());
+    // One error for the class, one for the constructor, one for the method.
+    assertEquals(3, report.errors().size());
     assertEquals(Errors.ADDED_FINAL, report.errors().iterator().next().error());
   }
 
-  public void testChangedFinalClass2() {
+  public void testRemovedFinalClass() {
     String[] args = { "test/api/changed-final3.xml", "test/api/constants.xml" };
     ApiCheck apiCheck = new ApiCheck();
     Report report = apiCheck.checkApi(args);
-    assertEquals(1, report.errors().size());
+    // One error for the class, one for the constructor, one for the method.
+    assertEquals(3, report.errors().size());
     assertEquals(Errors.REMOVED_FINAL, report.errors().iterator().next().error());
   }
 
