@@ -125,10 +125,14 @@ public class ApiCheckTest {
 
   @Test
   public void testChangedAssignableReturn() {
-    String[] args = { "test/api/changed-assignable-return-1.xml", "test/api/changed-assignable-return-2.xml" };
+    String[] args = {
+        "test/api/changed-assignable-return-1.xml",
+        "test/api/changed-assignable-return-2.xml"
+    };
     ApiCheck apiCheck = new ApiCheck();
     Report report = apiCheck.checkApi(args);
-    assertEquals(0, report.errors().size());
+    assertEquals(1, report.errors().size());
+    assertEquals(Errors.CHANGED_TYPE, report.errors().iterator().next().error());
   }
 
   @Test
