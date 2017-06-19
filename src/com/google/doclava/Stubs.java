@@ -18,6 +18,7 @@ package com.google.doclava;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -811,40 +812,32 @@ public class Stubs {
         || !field.type().dimension().equals("") || field.containingClass().isInterface();
   }
 
-  // Returns 'true' if the method is an @Override of a visible parent
-  // method implementation, and thus does not affect the API.
+  /**
+   * Test if the given method has a concrete implementation in a superclass or
+   * interface that has no differences in its public API representation.
+   *
+   * @return {@code true} if the tested method can be safely elided from the
+   *         public API to conserve space.
+   */
   static boolean methodIsOverride(HashSet<ClassInfo> notStrippable, MethodInfo mi) {
     // Abstract/static/final methods are always listed in the API description
     if (mi.isAbstract() || mi.isStatic() || mi.isFinal()) {
       return false;
     }
 
-    // Find any relevant ancestor declaration and inspect it
-    MethodInfo om = mi;
-    do {
-      MethodInfo superMethod = om.findSuperclassImplementation(notStrippable);
-      if (om.equals(superMethod)) {
-        break;
-      }
-      om = superMethod;
-    } while (om != null && (om.isHiddenOrRemoved() || om.containingClass().isHiddenOrRemoved()));
-    if (om != null) {
-      // Visibility mismatch is an API change, so check for it
-      if (mi.mIsPrivate == om.mIsPrivate && mi.mIsPublic == om.mIsPublic
-          && mi.mIsProtected == om.mIsProtected) {
-        // Look only for overrides of an ancestor class implementation,
-        // not of e.g. an abstract or interface method declaration
-        if (!om.isAbstract()) {
-          // If the only "override" turns out to be in our own class
-          // (which sometimes happens in concrete subclasses of
-          // abstract base classes), it's not really an override
-          if (!mi.mContainingClass.equals(om.mContainingClass)) {
-                return true;
-          }
+    final String api = writeMethodApiWithoutDefault(mi);
+    final MethodInfo overridden = mi.findPredicateOverriddenMethod(new Predicate<MethodInfo>() {
+      @Override
+      public boolean test(MethodInfo test) {
+        if (test.isHiddenOrRemoved() || test.containingClass().isHiddenOrRemoved()) {
+          return false;
         }
+
+        final String testApi = writeMethodApiWithoutDefault(test);
+        return api.equals(testApi);
       }
-    }
-    return false;
+    });
+    return (overridden != null);
   }
 
   static boolean canCallMethod(ClassInfo from, MethodInfo m) {
@@ -1573,10 +1566,20 @@ public class Stubs {
     apiWriter.print(";\n");
   }
 
+  static String writeMethodApiWithoutDefault(MethodInfo mi) {
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    writeMethodApi(new PrintStream(out), mi, false);
+    return out.toString();
+  }
+
   static void writeMethodApi(PrintStream apiWriter, MethodInfo mi) {
+    writeMethodApi(apiWriter, mi, true);
+  }
+
+  static void writeMethodApi(PrintStream apiWriter, MethodInfo mi, boolean withDefault) {
     apiWriter.print("    method ");
     apiWriter.print(mi.scope());
-    if (mi.isDefault()) {
+    if (mi.isDefault() && withDefault) {
       apiWriter.print(" default");
     }
     if (mi.isStatic()) {
