@@ -28,6 +28,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -44,7 +46,8 @@ import java.util.stream.Collectors;
 
 public class Stubs {
   public static void writeStubsAndApi(String stubsDir, String apiFile, String keepListFile,
-      String removedApiFile, String exactApiFile, HashSet<String> stubPackages) {
+      String removedApiFile, String exactApiFile, HashSet<String> stubPackages,
+      boolean stubSourceOnly) {
     // figure out which classes we need
     final HashSet<ClassInfo> notStrippable = new HashSet<ClassInfo>();
     ClassInfo[] all = Converter.allClasses();
@@ -188,6 +191,9 @@ public class Stubs {
     final HashSet<Pattern> stubPackageWildcards = extractWildcards(stubPackages);
     for (ClassInfo cl : notStrippable) {
       if (!cl.isDocOnly()) {
+        if (stubSourceOnly && !Files.exists(Paths.get(cl.position().file))) {
+          continue;
+        }
         if (shouldWriteStub(cl.containingPackage().name(), stubPackages, stubPackageWildcards)) {
           // write out the stubs
           if (stubsDir != null) {
