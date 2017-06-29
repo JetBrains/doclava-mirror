@@ -47,6 +47,7 @@ import java.util.stream.Collectors;
 public class Stubs {
   public static void writeStubsAndApi(String stubsDir, String apiFile, String keepListFile,
       String removedApiFile, String exactApiFile, HashSet<String> stubPackages,
+      HashSet<String> stubImportPackages,
       boolean stubSourceOnly) {
     // figure out which classes we need
     final HashSet<ClassInfo> notStrippable = new HashSet<ClassInfo>();
@@ -98,11 +99,11 @@ public class Stubs {
             "Cannot open file for write");
       }
     }
-    // If a class is public or protected, not hidden, and marked as included,
+    // If a class is public or protected, not hidden, not imported and marked as included,
     // then we can't strip it
     for (ClassInfo cl : all) {
       if (cl.checkLevel() && cl.isIncluded()) {
-        cantStripThis(cl, notStrippable, "0:0");
+        cantStripThis(cl, notStrippable, "0:0", stubImportPackages);
       }
     }
 
@@ -121,7 +122,7 @@ public class Stubs {
                 + m.name() + " is deprecated");
           }
 
-          ClassInfo hiddenClass = findHiddenClasses(m.returnType());
+          ClassInfo hiddenClass = findHiddenClasses(m.returnType(), stubImportPackages);
           if (null != hiddenClass) {
             if (hiddenClass.qualifiedName() == m.returnType().asClassInfo().qualifiedName()) {
               // Return type is hidden
@@ -138,7 +139,7 @@ public class Stubs {
           for (ParameterInfo p :  m.parameters()) {
             TypeInfo t = p.type();
             if (!t.isPrimitive()) {
-              hiddenClass = findHiddenClasses(t);
+              hiddenClass = findHiddenClasses(t, stubImportPackages);
               if (null != hiddenClass) {
                 if (hiddenClass.qualifiedName() == t.asClassInfo().qualifiedName()) {
                   // Parameter type is hidden
@@ -289,15 +290,34 @@ public class Stubs {
     return wildcards;
   }
 
-  private static ClassInfo findHiddenClasses(TypeInfo ti) {
+  /**
+   * Find references to hidden classes.
+   *
+   * <p>This finds hidden classes that are used by public parts of the API in order to ensure the
+   * API is self consistent and does not reference classes that are not included in
+   * the stubs. Any such references cause an error to be reported.
+   *
+   * <p>A reference to an imported class is not treated as an error, even though imported classes
+   * are hidden from the stub generation. That is because imported classes are, by definition,
+   * excluded from the set of classes for which stubs are required.
+   *
+   * @param ti the type information to examine for references to hidden classes.
+   * @param stubImportPackages the possibly null set of imported package names.
+   * @return a reference to a hidden class or null if there are none
+   */
+  private static ClassInfo findHiddenClasses(TypeInfo ti, HashSet<String> stubImportPackages) {
     ClassInfo ci = ti.asClassInfo();
     if (ci == null) return null;
+    if (stubImportPackages != null
+        && stubImportPackages.contains(ci.containingPackage().qualifiedName())) {
+      return null;
+    }
     if (ci.isHiddenOrRemoved()) return ci;
     if (ti.typeArguments() != null) {
       for (TypeInfo tii : ti.typeArguments()) {
         // Avoid infinite recursion in the case of Foo<T extends Foo>
         if (tii.qualifiedTypeName() != ti.qualifiedTypeName()) {
-          ClassInfo hiddenClass = findHiddenClasses(tii);
+          ClassInfo hiddenClass = findHiddenClasses(tii, stubImportPackages);
           if (hiddenClass != null) return hiddenClass;
         }
       }
@@ -305,7 +325,14 @@ public class Stubs {
     return null;
   }
 
-  public static void cantStripThis(ClassInfo cl, HashSet<ClassInfo> notStrippable, String why) {
+  public static void cantStripThis(ClassInfo cl, HashSet<ClassInfo> notStrippable, String why,
+      HashSet<String> stubImportPackages) {
+
+    if (stubImportPackages != null
+        && stubImportPackages.contains(cl.containingPackage().qualifiedName())) {
+      // if the package is imported then it does not need stubbing.
+      return;
+    }
 
     if (!notStrippable.add(cl)) {
       // slight optimization: if it already contains cl, it already contains
@@ -325,12 +352,14 @@ public class Stubs {
       for (FieldInfo fInfo : cl.selfFields()) {
         if (fInfo.type() != null) {
           if (fInfo.type().asClassInfo() != null) {
-            cantStripThis(fInfo.type().asClassInfo(), notStrippable, "2:" + cl.qualifiedName());
+            cantStripThis(fInfo.type().asClassInfo(), notStrippable, "2:" + cl.qualifiedName(),
+                stubImportPackages);
           }
           if (fInfo.type().typeArguments() != null) {
             for (TypeInfo tTypeInfo : fInfo.type().typeArguments()) {
               if (tTypeInfo.asClassInfo() != null) {
-                cantStripThis(tTypeInfo.asClassInfo(), notStrippable, "3:" + cl.qualifiedName());
+                cantStripThis(tTypeInfo.asClassInfo(), notStrippable, "3:" + cl.qualifiedName(),
+                    stubImportPackages);
               }
             }
           }
@@ -342,7 +371,8 @@ public class Stubs {
       if (cl.asTypeInfo().typeArguments() != null) {
         for (TypeInfo tInfo : cl.asTypeInfo().typeArguments()) {
           if (tInfo.asClassInfo() != null) {
-            cantStripThis(tInfo.asClassInfo(), notStrippable, "4:" + cl.qualifiedName());
+            cantStripThis(tInfo.asClassInfo(), notStrippable, "4:" + cl.qualifiedName(),
+                stubImportPackages);
           }
         }
       }
@@ -350,11 +380,12 @@ public class Stubs {
     // cant strip any of the annotation elements
     // cantStripThis(cl.annotationElements(), notStrippable);
     // take care of methods
-    cantStripThis(cl.allSelfMethods(), notStrippable);
-    cantStripThis(cl.allConstructors(), notStrippable);
+    cantStripThis(cl.allSelfMethods(), notStrippable, stubImportPackages);
+    cantStripThis(cl.allConstructors(), notStrippable, stubImportPackages);
     // blow the outer class open if this is an inner class
     if (cl.containingClass() != null) {
-      cantStripThis(cl.containingClass(), notStrippable, "5:" + cl.qualifiedName());
+      cantStripThis(cl.containingClass(), notStrippable, "5:" + cl.qualifiedName(),
+          stubImportPackages);
     }
     // blow open super class and interfaces
     ClassInfo supr = cl.realSuperclass();
@@ -372,7 +403,8 @@ public class Stubs {
         Errors.error(Errors.HIDDEN_SUPERCLASS, cl.position(), "Public class " + cl.qualifiedName()
             + " stripped of unavailable superclass " + supr.qualifiedName());
       } else {
-        cantStripThis(supr, notStrippable, "6:" + cl.realSuperclass().name() + cl.qualifiedName());
+        cantStripThis(supr, notStrippable, "6:" + cl.realSuperclass().name() + cl.qualifiedName(),
+            stubImportPackages);
         if (supr.isPrivate()) {
           Errors.error(Errors.PRIVATE_SUPERCLASS, cl.position(), "Public class "
               + cl.qualifiedName() + " extends private class " + supr.qualifiedName());
@@ -381,7 +413,8 @@ public class Stubs {
     }
   }
 
-  private static void cantStripThis(ArrayList<MethodInfo> mInfos, HashSet<ClassInfo> notStrippable) {
+  private static void cantStripThis(ArrayList<MethodInfo> mInfos, HashSet<ClassInfo> notStrippable,
+      HashSet<String> stubImportPackages) {
     // for each method, blow open the parameters, throws and return types. also blow open their
     // generics
     if (mInfos != null) {
@@ -390,7 +423,8 @@ public class Stubs {
           for (TypeInfo tInfo : mInfo.getTypeParameters()) {
             if (tInfo.asClassInfo() != null) {
               cantStripThis(tInfo.asClassInfo(), notStrippable, "8:"
-                  + mInfo.realContainingClass().qualifiedName() + ":" + mInfo.name());
+                  + mInfo.realContainingClass().qualifiedName() + ":" + mInfo.name(),
+                  stubImportPackages);
             }
           }
         }
@@ -398,7 +432,8 @@ public class Stubs {
           for (ParameterInfo pInfo : mInfo.parameters()) {
             if (pInfo.type() != null && pInfo.type().asClassInfo() != null) {
               cantStripThis(pInfo.type().asClassInfo(), notStrippable, "9:"
-                  + mInfo.realContainingClass().qualifiedName() + ":" + mInfo.name());
+                  + mInfo.realContainingClass().qualifiedName() + ":" + mInfo.name(),
+                  stubImportPackages);
               if (pInfo.type().typeArguments() != null) {
                 for (TypeInfo tInfoType : pInfo.type().typeArguments()) {
                   if (tInfoType.asClassInfo() != null) {
@@ -411,7 +446,8 @@ public class Stubs {
                                   + "()");
                     } else {
                       cantStripThis(tcl, notStrippable, "10:"
-                          + mInfo.realContainingClass().qualifiedName() + ":" + mInfo.name());
+                          + mInfo.realContainingClass().qualifiedName() + ":" + mInfo.name(),
+                          stubImportPackages);
                     }
                   }
                 }
@@ -421,16 +457,18 @@ public class Stubs {
         }
         for (ClassInfo thrown : mInfo.thrownExceptions()) {
           cantStripThis(thrown, notStrippable, "11:" + mInfo.realContainingClass().qualifiedName()
-              + ":" + mInfo.name());
+              + ":" + mInfo.name(), stubImportPackages);
         }
         if (mInfo.returnType() != null && mInfo.returnType().asClassInfo() != null) {
           cantStripThis(mInfo.returnType().asClassInfo(), notStrippable, "12:"
-              + mInfo.realContainingClass().qualifiedName() + ":" + mInfo.name());
+              + mInfo.realContainingClass().qualifiedName() + ":" + mInfo.name(),
+              stubImportPackages);
           if (mInfo.returnType().typeArguments() != null) {
             for (TypeInfo tyInfo : mInfo.returnType().typeArguments()) {
               if (tyInfo.asClassInfo() != null) {
                 cantStripThis(tyInfo.asClassInfo(), notStrippable, "13:"
-                    + mInfo.realContainingClass().qualifiedName() + ":" + mInfo.name());
+                    + mInfo.realContainingClass().qualifiedName() + ":" + mInfo.name(),
+                    stubImportPackages);
               }
             }
           }

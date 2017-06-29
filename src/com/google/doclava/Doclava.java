@@ -183,6 +183,7 @@ public class Doclava {
     String exactApiFile = null;
     String debugStubsFile = "";
     HashSet<String> stubPackages = null;
+    HashSet<String> stubImportPackages = null;
     boolean stubSourceOnly = false;
     ArrayList<String> knownTagsFiles = new ArrayList<String>();
 
@@ -281,6 +282,12 @@ public class Doclava {
         stubPackages = new HashSet<String>();
         for (String pkg : a[1].split(":")) {
           stubPackages.add(pkg);
+        }
+      } else if (a[0].equals("-stubimportpackages")) {
+        stubImportPackages = new HashSet<String>();
+        for (String pkg : a[1].split(":")) {
+          stubImportPackages.add(pkg);
+          hiddenPackages.add(pkg);
         }
       } else if (a[0].equals("-stubsourceonly")) {
         stubSourceOnly = true;
@@ -521,6 +528,7 @@ public class Doclava {
         || exactApiFile != null) {
       Stubs.writeStubsAndApi(stubsDir, apiFile, proguardFile, removedApiFile, exactApiFile,
           stubPackages,
+          stubImportPackages,
           stubSourceOnly);
     }
 
@@ -790,6 +798,9 @@ public class Doclava {
       return 2;
     }
     if (option.equals("-stubpackages")) {
+      return 2;
+    }
+    if (option.equals("-stubimportpackages")) {
       return 2;
     }
     if (option.equals("-stubsourceonly")) {
