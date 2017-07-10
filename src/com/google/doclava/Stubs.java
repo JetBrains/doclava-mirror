@@ -863,7 +863,7 @@ public class Stubs {
    * @return {@code true} if the tested method can be safely elided from the
    *         public API to conserve space.
    */
-  static boolean methodIsOverride(HashSet<ClassInfo> notStrippable, MethodInfo mi) {
+  static boolean methodIsOverride(MethodInfo mi) {
     // Abstract/static/final methods are always listed in the API description
     if (mi.isAbstract() || mi.isStatic() || mi.isFinal()) {
       return false;
@@ -1017,30 +1017,12 @@ public class Stubs {
     stream.println(";");
   }
 
-  static void writeXML(PrintStream xmlWriter, HashMap<PackageInfo, List<ClassInfo>> allClasses,
-      HashSet<ClassInfo> notStrippable) {
-    // extract the set of packages, sort them by name, and write them out in that order
-    Set<PackageInfo> allClassKeys = allClasses.keySet();
-    PackageInfo[] allPackages = allClassKeys.toArray(new PackageInfo[allClassKeys.size()]);
-    Arrays.sort(allPackages, PackageInfo.comparator);
+  public static void writeXml(PrintStream xmlWriter, Collection<PackageInfo> pkgs,
+      Predicate<ClassInfo> notStrippable) {
 
-    xmlWriter.println("<api>");
-    for (PackageInfo pack : allPackages) {
-      writePackageXML(xmlWriter, pack, allClasses.get(pack), notStrippable);
-    }
-    xmlWriter.println("</api>");
-  }
-
-  public static void writeXml(PrintStream xmlWriter, Collection<PackageInfo> pkgs) {
     final PackageInfo[] packages = pkgs.toArray(new PackageInfo[pkgs.size()]);
     Arrays.sort(packages, PackageInfo.comparator);
 
-    HashSet<ClassInfo> notStrippable = new HashSet();
-    for (PackageInfo pkg: packages) {
-      for (ClassInfo cl: pkg.allClasses().values()) {
-        notStrippable.add(cl);
-      }
-    }
     xmlWriter.println("<api>");
     for (PackageInfo pkg: packages) {
       writePackageXML(xmlWriter, pkg, pkg.allClasses().values(), notStrippable);
@@ -1048,8 +1030,17 @@ public class Stubs {
     xmlWriter.println("</api>");
   }
 
+  public static void writeXml(PrintStream xmlWriter, Collection<PackageInfo> pkgs) {
+    HashSet<ClassInfo> allClasses = new HashSet<>();
+    for (PackageInfo pkg: pkgs) {
+      allClasses.addAll(pkg.allClasses().values());
+    }
+    Predicate<ClassInfo> notStrippable = allClasses::contains;
+    writeXml(xmlWriter, pkgs, notStrippable);
+  }
+
   static void writePackageXML(PrintStream xmlWriter, PackageInfo pack,
-      Collection<ClassInfo> classList, HashSet<ClassInfo> notStrippable) {
+      Collection<ClassInfo> classList, Predicate<ClassInfo> notStrippable) {
     ClassInfo[] classes = classList.toArray(new ClassInfo[classList.size()]);
     Arrays.sort(classes, ClassInfo.comparator);
     // Work around the bogus "Array" class we invent for
@@ -1068,7 +1059,7 @@ public class Stubs {
 
   }
 
-  static void writeClassXML(PrintStream xmlWriter, ClassInfo cl, HashSet<ClassInfo> notStrippable) {
+  static void writeClassXML(PrintStream xmlWriter, ClassInfo cl, Predicate<ClassInfo> notStrippable) {
     String scope = cl.scope();
     String deprecatedString = "";
     String declString = (cl.isInterface()) ? "interface" : "class";
@@ -1092,7 +1083,7 @@ public class Stubs {
     ArrayList<ClassInfo> interfaces = cl.realInterfaces();
     Collections.sort(interfaces, ClassInfo.comparator);
     for (ClassInfo iface : interfaces) {
-      if (notStrippable.contains(iface)) {
+      if (notStrippable.test(iface)) {
         xmlWriter.println("<implements name=\"" + iface.qualifiedName() + "\">");
         xmlWriter.println("</implements>");
       }
@@ -1107,7 +1098,7 @@ public class Stubs {
     ArrayList<MethodInfo> methods = cl.allSelfMethods();
     Collections.sort(methods, MethodInfo.comparator);
     for (MethodInfo mi : methods) {
-      if (!methodIsOverride(notStrippable, mi)) {
+      if (!methodIsOverride(mi)) {
         writeMethodXML(xmlWriter, mi);
       }
     }
@@ -1576,7 +1567,7 @@ public class Stubs {
     ArrayList<MethodInfo> methods = cl.allSelfMethods();
     Collections.sort(methods, MethodInfo.comparator);
     for (MethodInfo mi : methods) {
-      if (!methodIsOverride(notStrippable, mi)) {
+      if (!methodIsOverride(mi)) {
         writeMethodApi(apiWriter, mi);
       }
     }
