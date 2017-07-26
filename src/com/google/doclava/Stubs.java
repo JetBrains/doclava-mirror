@@ -1017,6 +1017,14 @@ public class Stubs {
     stream.println(";");
   }
 
+  public static void writeXml(PrintStream xmlWriter, Collection<PackageInfo> pkgs, boolean strip) {
+    if (strip) {
+      Stubs.writeXml(xmlWriter, pkgs);
+    } else {
+      Stubs.writeXml(xmlWriter, pkgs, c -> true);
+    }
+  }
+
   public static void writeXml(PrintStream xmlWriter, Collection<PackageInfo> pkgs,
       Predicate<ClassInfo> notStrippable) {
 
