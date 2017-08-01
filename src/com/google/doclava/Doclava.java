@@ -104,6 +104,7 @@ public class Doclava {
   public static HashSet<String> knownTags = new HashSet<String>();
   public static FederationTagger federationTagger = new FederationTagger();
   public static Set<String> showAnnotations = new HashSet<String>();
+  public static Set<String> hideAnnotations = new HashSet<String>();
   public static boolean showAnnotationOverridesVisibility = false;
   public static Set<String> hiddenPackages = new HashSet<String>();
   public static boolean includeAssets = true;
@@ -182,6 +183,8 @@ public class Doclava {
     String exactApiFile = null;
     String debugStubsFile = "";
     HashSet<String> stubPackages = null;
+    HashSet<String> stubImportPackages = null;
+    boolean stubSourceOnly = false;
     ArrayList<String> knownTagsFiles = new ArrayList<String>();
 
     root = r;
@@ -251,6 +254,8 @@ public class Doclava {
         keepListFile = a[1];
       } else if (a[0].equals("-showAnnotation")) {
         showAnnotations.add(a[1]);
+      } else if (a[0].equals("-hideAnnotation")) {
+        hideAnnotations.add(a[1]);
       } else if (a[0].equals("-showAnnotationOverridesVisibility")) {
         showAnnotationOverridesVisibility = true;
       } else if (a[0].equals("-hidePackage")) {
@@ -278,6 +283,14 @@ public class Doclava {
         for (String pkg : a[1].split(":")) {
           stubPackages.add(pkg);
         }
+      } else if (a[0].equals("-stubimportpackages")) {
+        stubImportPackages = new HashSet<String>();
+        for (String pkg : a[1].split(":")) {
+          stubImportPackages.add(pkg);
+          hiddenPackages.add(pkg);
+        }
+      } else if (a[0].equals("-stubsourceonly")) {
+        stubSourceOnly = true;
       } else if (a[0].equals("-sdkvalues")) {
         sdkValuePath = a[1];
       } else if (a[0].equals("-api")) {
@@ -412,6 +425,11 @@ public class Doclava {
 
       // don't do ref doc tasks in devsite static-only builds
       if (!DEVSITE_STATIC_ONLY) {
+        // Load additional data structures from federated sites.
+        for(FederatedSite site : federationTagger.getSites()) {
+          Converter.addApiInfo(site.apiInfo());
+        }
+
         // Apply @since tags from the XML file
         sinceTagger.tagAll(Converter.rootClasses());
 
@@ -509,7 +527,9 @@ public class Doclava {
     if (stubsDir != null || apiFile != null || proguardFile != null || removedApiFile != null
         || exactApiFile != null) {
       Stubs.writeStubsAndApi(stubsDir, apiFile, proguardFile, removedApiFile, exactApiFile,
-          stubPackages);
+          stubPackages,
+          stubImportPackages,
+          stubSourceOnly);
     }
 
     Errors.printErrors();
@@ -779,6 +799,12 @@ public class Doclava {
     }
     if (option.equals("-stubpackages")) {
       return 2;
+    }
+    if (option.equals("-stubimportpackages")) {
+      return 2;
+    }
+    if (option.equals("-stubsourceonly")) {
+      return 1;
     }
     if (option.equals("-sdkvalues")) {
       return 2;
