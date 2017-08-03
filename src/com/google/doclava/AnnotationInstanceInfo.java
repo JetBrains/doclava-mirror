@@ -20,7 +20,6 @@ import com.google.clearsilver.jsilver.data.Data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 
 public class AnnotationInstanceInfo implements Resolvable {
   private ClassInfo mType;
@@ -147,40 +146,19 @@ public class AnnotationInstanceInfo implements Resolvable {
 
   /**
    * Get a new list containing the set of annotations that are shared between
-   * the input annotations collection and the set of allowed annotations.
+   * the input annotations collection and the names of annotations passed in
+   * the showAnnotations parameter
    */
-  public static ArrayList<AnnotationInstanceInfo> getAnnotationsIntersection(
-          Collection<String> allowedAnnotations,
-          Collection<? extends AnnotationInstanceInfo> allAnnotations) {
+  public static ArrayList<AnnotationInstanceInfo> getShowAnnotationsIntersection(
+          ArrayList<AnnotationInstanceInfo> annotations) {
     ArrayList<AnnotationInstanceInfo> list = new ArrayList<AnnotationInstanceInfo>();
-    java.util.Objects.requireNonNull(allowedAnnotations);
-    if (allAnnotations != null) {
-      for (AnnotationInstanceInfo info : allAnnotations) {
-        if (allowedAnnotations.contains(info.type().qualifiedName())) {
+    if (annotations != null) {
+      for (AnnotationInstanceInfo info : annotations) {
+        if (Doclava.showAnnotations.contains(info.type().qualifiedName())) {
           list.add(info);
         }
       }
     }
     return list;
-  }
-
-  /**
-   * Get a new list containing the set of annotations that are shared between
-   * the input annotations collection and the names of annotations passed in
-   * the showAnnotations parameter
-   */
-  public static ArrayList<AnnotationInstanceInfo> getShowAnnotationsIntersection(
-          Collection<? extends AnnotationInstanceInfo> annotations) {
-    return getAnnotationsIntersection(Doclava.showAnnotations, annotations);
-  }
-
-  /**
-   * Get a new list containing the set of annotations that are shared between
-   * the input annotations collection and the names of annotations passed in
-   * the hideAnnotations parameter
-   */
-  public static ArrayList<AnnotationInstanceInfo> getHideAnnotationsIntersection(
-          Collection<? extends AnnotationInstanceInfo> annotations) {
-    return getAnnotationsIntersection(Doclava.hideAnnotations, annotations);
   }
 }
