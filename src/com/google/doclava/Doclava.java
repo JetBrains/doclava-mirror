@@ -749,6 +749,9 @@ public class Doclava {
     if (option.equals("-werror")) {
       return 1;
     }
+    if (option.equals("-lerror")) {
+      return 1;
+    }
     if (option.equals("-hide")) {
       return 2;
     }
