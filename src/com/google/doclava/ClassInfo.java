@@ -1510,9 +1510,6 @@ public class ClassInfo extends DocInfo implements ContainerInfo, Comparable, Sco
   public boolean isRemovedImpl() {
     ClassInfo cl = this;
     while (cl != null) {
-      if (cl.hasShowAnnotation()) {
-        return false;
-      }
       PackageInfo pkg = cl.containingPackage();
       if (pkg != null && pkg.hasRemovedComment()) {
         return true;
