@@ -1123,6 +1123,7 @@ public class ClassInfo extends DocInfo implements ContainerInfo, Comparable, Sco
     if (isDeprecated()) {
       data.setValue(base + ".deprecatedsince", getDeprecatedSince());
     }
+    data.setValue(base + ".artifact", getArtifact());
 
     ArrayList<AnnotationInstanceInfo> showAnnos = getShowAnnotationsIncludeOuters();
     AnnotationInstanceInfo.makeLinkListHDF(
@@ -1193,6 +1194,7 @@ public class ClassInfo extends DocInfo implements ContainerInfo, Comparable, Sco
     if (isDeprecated()) {
       data.setValue("class.deprecatedsince", getDeprecatedSince());
     }
+    data.setValue("class.artifact", getArtifact());
     setFederatedReferences(data, "class");
 
     // the containing package -- note that this can be passed to type_link,
