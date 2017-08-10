@@ -1238,14 +1238,16 @@ public class Stubs {
       ClassInfo clazz = member.containingClass();
 
       boolean visible = member.isPublic() || member.isProtected();
+      boolean hidden = member.isHidden();
       boolean removed = member.isRemoved();
       while (clazz != null) {
         visible &= clazz.isPublic() || clazz.isProtected();
+        hidden |= clazz.isHidden();
         removed |= clazz.isRemoved();
         clazz = clazz.containingClass();
       }
 
-      if (visible && removed) {
+      if (visible && !hidden && removed) {
         if (member instanceof MethodInfo) {
           final MethodInfo method = (MethodInfo) member;
           return (method.findOverriddenMethod(method.name(), method.signature()) == null);
@@ -1265,15 +1267,17 @@ public class Stubs {
 
       boolean visible = member.isPublic() || member.isProtected();
       boolean hasShowAnnotation = member.hasShowAnnotation();
-      boolean hiddenOrRemoved = member.isHiddenOrRemoved();
+      boolean hidden = member.isHidden();
+      boolean removed = member.isRemoved();
       while (clazz != null) {
         visible &= clazz.isPublic() || clazz.isProtected();
         hasShowAnnotation |= clazz.hasShowAnnotation();
-        hiddenOrRemoved |= clazz.isHiddenOrRemoved();
+        hidden |= clazz.isHidden();
+        removed |= clazz.isRemoved();
         clazz = clazz.containingClass();
       }
 
-      if (visible && hasShowAnnotation && !hiddenOrRemoved) {
+      if (visible && hasShowAnnotation && !hidden && !removed) {
         if (member instanceof MethodInfo) {
           final MethodInfo method = (MethodInfo) member;
           return (method.findOverriddenMethod(method.name(), method.signature()) == null);
