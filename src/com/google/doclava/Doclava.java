@@ -101,6 +101,7 @@ public class Doclava {
   public static Map<Character, String> escapeChars = new HashMap<Character, String>();
   public static String title = "";
   public static SinceTagger sinceTagger = new SinceTagger();
+  public static ArtifactTagger artifactTagger = new ArtifactTagger();
   public static HashSet<String> knownTags = new HashSet<String>();
   public static FederationTagger federationTagger = new FederationTagger();
   public static Set<String> showAnnotations = new HashSet<String>();
@@ -309,6 +310,8 @@ public class Doclava {
         parseComments = true;
       } else if (a[0].equals("-since")) {
         sinceTagger.addVersion(a[1], a[2]);
+      } else if (a[0].equals("-artifact")) {
+        artifactTagger.addArtifact(a[1], a[2]);
       } else if (a[0].equals("-offlinemode")) {
         offlineMode = true;
       } else if (a[0].equals("-metadataDebug")) {
@@ -432,6 +435,9 @@ public class Doclava {
 
         // Apply @since tags from the XML file
         sinceTagger.tagAll(Converter.rootClasses());
+
+        // Apply @artifact tags from the XML file
+        artifactTagger.tagAll(Converter.rootClasses());
 
         // Apply details of federated documentation
         federationTagger.tagAll(Converter.rootClasses());
@@ -833,6 +839,9 @@ public class Doclava {
     if (option.equals("-since")) {
       return 3;
     }
+    if (option.equals("-artifact")) {
+      return 3;
+    }
     if (option.equals("-offlinemode")) {
       return 1;
     }
@@ -979,6 +988,7 @@ public class Doclava {
       }
       data.setValue("reference", "1");
       data.setValue("reference.apilevels", sinceTagger.hasVersions() ? "1" : "0");
+      data.setValue("reference.artifacts", artifactTagger.hasArtifacts() ? "1" : "0");
       data.setValue("docs.packages." + i + ".name", s);
       data.setValue("docs.packages." + i + ".link", pkg.htmlPage());
       data.setValue("docs.packages." + i + ".since", pkg.getSince());
