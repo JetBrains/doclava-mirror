@@ -53,14 +53,6 @@ public abstract class MemberInfo extends DocInfo implements Comparable, Scoped {
   }
 
   @Override
-  public boolean isRemoved() {
-    if (mShowAnnotations.size() > 0) {
-      return false;
-    }
-    return super.isRemoved();
-  }
-
-  @Override
   public boolean isHiddenOrRemoved() {
     return isHidden() || isRemoved();
   }
