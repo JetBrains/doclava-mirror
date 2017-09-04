@@ -745,6 +745,7 @@ public class Stubs {
     int N = enumConstants.size();
     int i = 0;
     for (FieldInfo field : enumConstants) {
+      writeAnnotations(stream, field.annotations(), field.isDeprecated());
       if (!field.constantLiteralValue().equals("null")) {
         stream.println(field.name() + "(" + field.constantLiteralValue()
             + (i == N - 1 ? ");" : "),"));
