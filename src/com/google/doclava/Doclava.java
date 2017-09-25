@@ -824,6 +824,9 @@ public class Doclava {
     if (option.equals("-showAnnotation")) {
       return 2;
     }
+    if (option.equals("-hideAnnotation")) {
+      return 2;
+    }
     if (option.equals("-showAnnotationOverridesVisibility")) {
       return 1;
     }
