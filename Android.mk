@@ -25,7 +25,7 @@ LOCAL_JAVA_LIBRARIES := \
 	guavalib \
 	antlr-runtime
 
-LOCAL_STATIC_JAVA_LIBRARIES += tagsouplib
+LOCAL_STATIC_JAVA_LIBRARIES += tagsoup
 
 LOCAL_CLASSPATH := \
 	$(HOST_JDK_TOOLS_JAR)
