@@ -920,7 +920,7 @@ public class Stubs {
       if (canCallMethod(cl, m)) {
         if (m.thrownExceptions() != null) {
           for (ClassInfo thrown : m.thrownExceptions()) {
-            if (!exceptionNames.contains(thrown.name())) {
+            if (thrownExceptions != null && !exceptionNames.contains(thrown.name())) {
               badException = true;
             }
           }
