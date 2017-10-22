@@ -2048,16 +2048,20 @@ public class ClassInfo extends DocInfo implements ContainerInfo, Comparable, Sco
          * abstractness affects how users use it. See also Stubs.methodIsOverride().
          */
         MethodInfo mi = ClassInfo.overriddenMethod(mInfo, this);
-        if (mi == null ||
-            mi.isAbstract() != mInfo.isAbstract()) {
-          Errors.error(Errors.ADDED_METHOD, mInfo.position(), "Added public method "
-              + mInfo.prettyQualifiedSignature());
-          if (diffMode) {
-            newMethods.add(mInfo);
-          }
+        if (mi == null && mInfo.isAbstract()) {
+          Errors.error(Errors.ADDED_ABSTRACT_METHOD, mInfo.position(),
+              "Added abstract public method "
+              + mInfo.prettyQualifiedSignature() + " to existing class");
           consistent = false;
+        } else if (mi == null || mi.isAbstract() != mInfo.isAbstract()) {
+            Errors.error(Errors.ADDED_METHOD, mInfo.position(), "Added public method "
+                + mInfo.prettyQualifiedSignature());
+            if (diffMode) {
+              newMethods.add(mInfo);
+            }
+            consistent = false;
+          }
         }
-      }
     }
     if (diffMode) {
       Collections.sort(newMethods, MethodInfo.comparator);
