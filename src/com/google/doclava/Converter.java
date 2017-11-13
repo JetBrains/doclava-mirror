@@ -614,7 +614,10 @@ public class Converter {
     @Override
     protected Object keyFor(Object o) {
       Type t = (Type) o;
-      String keyString = o.getClass().getName() + "/" + o.toString() + "/";
+      while (t.asAnnotatedType() != null) {
+        t = t.asAnnotatedType().underlyingType();
+      }
+      String keyString = t.getClass().getName() + "/" + t.toString() + "/";
       if (t.asParameterizedType() != null) {
         keyString += t.asParameterizedType().toString() + "/";
         if (t.asParameterizedType().typeArguments() != null) {
