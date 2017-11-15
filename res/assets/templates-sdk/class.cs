@@ -209,6 +209,14 @@
 <html<?cs if:devsite ?> devsite<?cs /if ?>>
 <?cs include:"head_tag.cs" ?>
 <?cs include:"body_tag.cs" ?>
+<div itemscope itemtype="http://developers.google.com/ReferenceObject">
+<!-- This DIV closes at the end of the BODY -->
+  <meta itemprop="name" content="<?cs var:class.qualifiedType.label ?>" />
+  <?cs if:(dac&&class.artifact)
+    ?><meta itemprop="path" content="Support Library" /><?cs
+  elif:(dac&&class.since)
+    ?><meta itemprop="path" content="API level <?cs var:class.since ?>" /><?cs
+  /if ?>
 <?cs include:"header.cs" ?>
 <?cs # Includes api-info-block DIV at top of page. Standard Devsite uses right nav. ?>
 <?cs if:dac ?><?cs include:"page_info.cs" ?><?cs /if ?>
@@ -671,5 +679,6 @@ if:subcount(class.subclasses.direct) && !class.subclasses.hidden ?>
 <?cs include:"footer.cs" ?>
 <?cs include:"trailer.cs" ?>
 <?cs /if ?>
+</div><!-- end devsite ReferenceObject -->
 </body>
 </html>
