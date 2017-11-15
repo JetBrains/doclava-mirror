@@ -209,13 +209,21 @@
 <html<?cs if:devsite ?> devsite<?cs /if ?>>
 <?cs include:"head_tag.cs" ?>
 <?cs include:"body_tag.cs" ?>
-<div itemscope itemtype="http://developers.google.com/ReferenceObject">
+<div itemscope itemtype="http://developers.google.com/ReferenceObject"
+     data-version-added="<?cs var:class.since ?>"<?cs
+     if:class.deprecatedsince
+       ?> data-version-deprecated="<?cs var:class.deprecatedsince ?>"<?cs
+     /if ?> >
 <!-- This DIV closes at the end of the BODY -->
   <meta itemprop="name" content="<?cs var:class.qualifiedType.label ?>" />
   <?cs if:(dac&&class.artifact)
-    ?><meta itemprop="path" content="Support Library" /><?cs
+    ?><meta itemprop="path" content="<?cs
+          if:class.deprecatedsince ?>Deprecated<?cs
+          else ?>Support Library<?cs /if ?>" /><?cs
   elif:(dac&&class.since)
-    ?><meta itemprop="path" content="API level <?cs var:class.since ?>" /><?cs
+    ?><meta itemprop="path" content="<?cs
+          if:class.deprecatedsince ?>Deprecated<?cs
+          else ?>API level <?cs var:class.since ?><?cs /if ?>" /><?cs
   /if ?>
 <?cs include:"header.cs" ?>
 <?cs # Includes api-info-block DIV at top of page. Standard Devsite uses right nav. ?>

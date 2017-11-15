@@ -6,7 +6,11 @@
 <html<?cs if:devsite ?> devsite<?cs /if ?>>
 <?cs include:"head_tag.cs" ?>
 <?cs include:"body_tag.cs" ?>
-<div itemscope itemtype="http://developers.google.com/ReferenceObject">
+<div itemscope itemtype="http://developers.google.com/ReferenceObject"
+     data-version-added="<?cs var:package.since ?>"<?cs
+     if:package.deprecatedsince
+       ?> data-version-deprecated="<?cs var:package.deprecatedsince ?>"<?cs
+     /if ?> >
 <!-- This DIV closes at the end of the BODY -->
   <meta itemprop="name" content="<?cs var:page.title ?>" />
   <?cs if:(dac&&package.since)
