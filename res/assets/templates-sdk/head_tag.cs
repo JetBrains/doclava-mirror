@@ -169,7 +169,8 @@ if:devsite ?>
   <meta name="hide_from_search_suggest" value="true" /><?cs
       /if ?><?cs
       if:reference ?>
-  <meta name="body_class" value="api apilevel-<?cs var:class.since ?><?cs var:package.since ?>" /><?cs
+  <meta name="body_class" value="api apilevel-<?cs var:class.since ?><?cs var:package.since ?>" />
+  <meta name="page_type" value="reference" /><?cs
       /if ?><?cs
       if:!dac ?>
   <meta name="hide_page_heading" value="true" /><?cs
