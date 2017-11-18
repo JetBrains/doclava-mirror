@@ -29,6 +29,7 @@ import java.util.*;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.io.*;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Array;
@@ -921,7 +922,7 @@ public class Doclava {
 
   public static Data makePackageHDF() {
     Data data = makeHDF();
-    ClassInfo[] classes = Converter.rootClasses();
+    Collection<ClassInfo> classes = Converter.rootClasses();
 
     SortedMap<String, PackageInfo> sorted = new TreeMap<String, PackageInfo>();
     for (ClassInfo cl : classes) {
@@ -1103,7 +1104,7 @@ public class Doclava {
     // Write the lists for API references
     Data data = makeHDF();
 
-    ClassInfo[] classes = Converter.rootClasses();
+    Collection<ClassInfo> classes = Converter.rootClasses();
 
     SortedMap<String, Object> sorted = new TreeMap<String, Object>();
     for (ClassInfo cl : classes) {
@@ -1291,8 +1292,8 @@ public class Doclava {
    */
   public static void writeKeepList(String filename) {
     HashSet<ClassInfo> notStrippable = new HashSet<ClassInfo>();
-    ClassInfo[] all = Converter.allClasses();
-    Arrays.sort(all); // just to make the file a little more readable
+    Collection<ClassInfo> all = Converter.allClasses().stream().sorted(ClassInfo.comparator)
+        .collect(Collectors.toList());
 
     // If a class is public and not hidden, then it and everything it derives
     // from cannot be stripped. Otherwise we can strip it.
@@ -1323,7 +1324,7 @@ public class Doclava {
       return sVisiblePackages;
     }
 
-    ClassInfo[] classes = Converter.rootClasses();
+    Collection<ClassInfo> classes = Converter.rootClasses();
     SortedMap<String, PackageInfo> sorted = new TreeMap<String, PackageInfo>();
     for (ClassInfo cl : classes) {
       PackageInfo pkg = cl.containingPackage();
@@ -1539,7 +1540,7 @@ public class Doclava {
    */
 
   public static void writeHierarchy() {
-    ClassInfo[] classes = Converter.rootClasses();
+    Collection<ClassInfo> classes = Converter.rootClasses();
     ArrayList<ClassInfo> info = new ArrayList<ClassInfo>();
     for (ClassInfo cl : classes) {
       if (!cl.isHiddenOrRemoved()) {
@@ -1553,7 +1554,7 @@ public class Doclava {
   }
 
   public static void writeClasses() {
-    ClassInfo[] classes = Converter.rootClasses();
+    Collection<ClassInfo> classes = Converter.rootClasses();
 
     for (ClassInfo cl : classes) {
       Data data = makePackageHDF();
@@ -1753,7 +1754,7 @@ public class Doclava {
     ArrayList<ClassInfo> widgets = new ArrayList<ClassInfo>();
     ArrayList<ClassInfo> layoutParams = new ArrayList<ClassInfo>();
 
-    ClassInfo[] classes = Converter.allClasses();
+    Collection<ClassInfo> classes = Converter.allClasses();
 
     // The topmost LayoutParams class - android.view.ViewGroup.LayoutParams
     ClassInfo topLayoutParams = null;

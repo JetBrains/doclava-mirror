@@ -254,25 +254,9 @@ public class ApiCheck {
   }
 
   static int convertToApi(String src, String dst) {
-    ApiInfo api;
-    try {
-      api = parseApi(src);
-    } catch (ApiParseException e) {
-      e.printStackTrace();
-      System.err.println("Error parsing API: " + src);
-      return 1;
-    }
-
-    PrintStream apiWriter = null;
-    try {
-      apiWriter = new PrintStream(dst);
-    } catch (FileNotFoundException ex) {
-      System.err.println("can't open file: " + dst);
-    }
-
-    Stubs.writeApi(apiWriter, api.getPackages().values());
-
-    return 0;
+    // This was historically used to convert XML to TXT format, which was a
+    // one-time migration.
+    throw new UnsupportedOperationException();
   }
 
   static int convertToXml(String src, String dst, boolean strip) {
