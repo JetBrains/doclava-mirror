@@ -39,6 +39,7 @@ import com.sun.javadoc.Type;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -111,12 +112,12 @@ public class Converter {
 
   private static ClassInfo[] mRootClasses;
 
-  public static ClassInfo[] rootClasses() {
-    return mRootClasses;
+  public static Collection<ClassInfo> rootClasses() {
+    return Arrays.asList(mRootClasses);
   }
 
-  public static ClassInfo[] allClasses() {
-    return (ClassInfo[]) mClasses.all();
+  public static Collection<ClassInfo> allClasses() {
+    return (Collection<ClassInfo>) mClasses.all();
   }
 
   private static final MethodDoc[] EMPTY_METHOD_DOC = new MethodDoc[0];
@@ -351,8 +352,8 @@ public class Converter {
     }
 
     @Override
-    ClassInfo[] all() {
-      return mCache.values().toArray(new ClassInfo[mCache.size()]);
+    Collection<?> all() {
+      return mCache.values();
     }
   };
 
@@ -758,7 +759,7 @@ public class Converter {
       return o;
     }
 
-    Object[] all() {
+    Collection<?> all() {
       return null;
     }
   }
