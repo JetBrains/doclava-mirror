@@ -19,6 +19,7 @@ package com.google.doclava;
 import com.google.clearsilver.jsilver.data.Data;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -63,7 +64,7 @@ public class NavTree {
    */
   public static void writeYamlTree(String dir, String fileName){
     Data data = Doclava.makeHDF();
-    ClassInfo[] classes = Converter.rootClasses();
+    Collection<ClassInfo> classes = Converter.rootClasses();
 
     SortedMap<String, Object> sorted = new TreeMap<String, Object>();
     for (ClassInfo cl : classes) {
