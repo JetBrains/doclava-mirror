@@ -1391,6 +1391,13 @@ public class Stubs {
       }
     }
 
+    for (MethodInfo method : methods) {
+      checkHiddenTypes(method, filterReference);
+    }
+    for (FieldInfo field : fields) {
+      checkHiddenTypes(field, filterReference);
+    }
+
     if (!hasWrittenPackageHead) {
       hasWrittenPackageHead = true;
       apiWriter.print("package ");
@@ -1514,6 +1521,40 @@ public class Stubs {
     if (!hasAnnotation) {
       Errors.error(Errors.REQUIRES_PERMISSION, mi, "Method '" + mi.name()
         + "' must be protected with a system permission.");
+    }
+  }
+
+  private static void checkHiddenTypes(MethodInfo method, Predicate<MemberInfo> filterReference) {
+    checkHiddenTypes(method.returnType(), method, filterReference);
+    List<ParameterInfo> params = method.parameters();
+    if (params != null) {
+      for (ParameterInfo param : params) {
+        checkHiddenTypes(param.type(), method, filterReference);
+      }
+    }
+  }
+
+  private static void checkHiddenTypes(FieldInfo field, Predicate<MemberInfo> filterReference) {
+    checkHiddenTypes(field.type(), field, filterReference);
+  }
+
+  private static void checkHiddenTypes(TypeInfo type, MemberInfo member,
+      Predicate<MemberInfo> filterReference) {
+    if (type == null || type.isPrimitive()) {
+      return;
+    }
+
+    ClassInfo clazz = type.asClassInfo();
+    if (clazz == null || !filterReference.test(clazz.asMemberInfo())) {
+      Errors.error(Errors.HIDDEN_TYPE_PARAMETER, member.position(),
+          "Member " + member + " references hidden type " + type.qualifiedTypeName() + ".");
+    }
+
+    List<TypeInfo> args = type.typeArguments();
+    if (args != null) {
+      for (TypeInfo arg : args) {
+        checkHiddenTypes(arg, member, filterReference);
+      }
     }
   }
 
