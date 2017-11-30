@@ -23,7 +23,13 @@
   <?cs set:count = #1 ?>
   <table class="jd-sumtable-expando">
     <?cs each:cl=classes ?>
-      <tr class="<?cs if:count % #2 ?>alt-color<?cs /if ?> api apilevel-<?cs var:cl.type.since ?>" >
+      <tr class="api apilevel-<?cs var:cl.type.since ?>"<?cs
+          if:cl.type.since ?>
+          data-version-added="<?cs var:cl.type.since ?>"<?cs
+          /if ?><?cs
+          if:cl.type.deprecatedsince
+            ?> data-version-deprecated="<?cs var:cl.type.deprecatedsince ?>"<?cs
+          /if ?> >
         <td class="jd-linkcol"><?cs call:type_link(cl.type) ?></td>
         <td class="jd-descrcol" width="100%">
           <?cs call:short_descr(cl) ?>&nbsp;
