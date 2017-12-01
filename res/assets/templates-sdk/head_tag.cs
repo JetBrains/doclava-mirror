@@ -12,11 +12,12 @@ else ?><?cs
 <?cs /if ?><?cs
 # END if/else devsite ?></title><?cs
   ####### If building devsite, add some meta data needed for when generating the top nav ######### ?><?cs
-if:devsite ?>
-  <?cs # if this build set `library.root` then set a django variable to be used by the subsequent
-       # _reference-head-tags.html file for the book path (or ignored if its no longer needed) ?>
-  <?cs if:library.root
-    ?>{% setvar book_path %}/reference/<?cs var:library.root ?>/_book.yaml{% endsetvar %}<?cs
+if:devsite ?><?cs
+  # if this build set `library.root` then set a django variable to be used by the subsequent
+  # _reference-head-tags.html file for the book path (or ignored if its no longer needed)
+  ?><?cs
+  if:library.root ?>
+  {% setvar book_path %}/reference/<?cs var:library.root ?>/_book.yaml{% endsetvar %}<?cs
   /if ?>
   {% include "_shared/_reference-head-tags.html" %}
   <meta name="body_class" value="api apilevel-<?cs var:class.since ?><?cs var:package.since ?>" /><?cs
