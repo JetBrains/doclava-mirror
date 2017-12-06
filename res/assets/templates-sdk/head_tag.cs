@@ -13,15 +13,27 @@ else ?><?cs
 # END if/else devsite ?></title><?cs
   ####### If building devsite, add some meta data needed for when generating the top nav ######### ?><?cs
 if:devsite ?><?cs
-  # if this build set `library.root` then set a django variable to be used by the subsequent
-  # _reference-head-tags.html file for the book path (or ignored if its no longer needed)
-  ?><?cs
-  if:library.root ?>
-  {% setvar book_path %}/reference/<?cs var:library.root ?>/_book.yaml{% endsetvar %}<?cs
-  /if ?>
-  {% include "_shared/_reference-head-tags.html" %}
-  <meta name="body_class" value="api apilevel-<?cs var:class.since ?><?cs var:package.since ?>" /><?cs
-else ?>
+  if:dac ?><?cs
+    # if this build set `library.root` then set a django variable to be used by the subsequent
+    # _reference-head-tags.html file for the book path (or ignored if its no longer needed)
+    ?><?cs
+    if:library.root ?>
+      {% setvar book_path %}/reference/<?cs var:library.root ?>/_book.yaml{% endsetvar %}<?cs
+    /if ?>
+    {% include "_shared/_reference-head-tags.html" %}
+    <meta name="body_class" value="api apilevel-<?cs var:class.since ?><?cs var:package.since ?>" /><?cs
+  else ?><?cs # If NOT dac... ?>
+    <meta name="hide_page_heading" value="true" />
+    <meta name="book_path" value="<?cs
+      if:book.path ?><?cs var:book.path ?><?cs
+      else ?>/_book.yaml<?cs
+      /if ?>" />
+    <meta name="project_path" value="<?cs
+      if:project.path ?><?cs var:project.path ?><?cs
+      else ?>/_project.yaml<?cs
+      /if ?>" /><?cs
+  /if ?><?cs # End if/else dac ?><?cs
+else ?><?cs # if NOT devsite... ?>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
 <meta content="IE=edge" http-equiv="X-UA-Compatible">
