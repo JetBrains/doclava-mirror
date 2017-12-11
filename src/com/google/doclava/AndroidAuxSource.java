@@ -202,21 +202,28 @@ public class AndroidAuxSource implements AuxSource {
 
       // Document integer values
       for (AnnotationInstanceInfo inner : annotation.type().annotations()) {
-        if (inner.type().qualifiedNameMatches("android", "annotation.IntDef")) {
+        boolean intDef = inner.type().qualifiedNameMatches("android", "annotation.IntDef");
+        boolean stringDef = inner.type().qualifiedNameMatches("android", "annotation.StringDef");
+        if (intDef || stringDef) {
           ArrayList<AnnotationValueInfo> prefixes = null;
+          ArrayList<AnnotationValueInfo> suffixes = null;
           ArrayList<AnnotationValueInfo> values = null;
+          final String kind = intDef ? "@intDef" : "@stringDef";
           boolean flag = false;
 
           for (AnnotationValueInfo val : inner.elementValues()) {
             switch (val.element().name()) {
               case "prefix": prefixes = (ArrayList<AnnotationValueInfo>) val.value(); break;
+              case "suffix": suffixes = (ArrayList<AnnotationValueInfo>) val.value(); break;
               case "value": values = (ArrayList<AnnotationValueInfo>) val.value(); break;
               case "flag": flag = Boolean.parseBoolean(String.valueOf(val.value())); break;
             }
           }
 
-          // Sadly we can only generate docs when told about a prefix
-          if (prefixes == null || prefixes.isEmpty()) continue;
+          // Sadly we can only generate docs when told about a prefix/suffix
+          if (prefixes == null) prefixes = new ArrayList<>();
+          if (suffixes == null) suffixes = new ArrayList<>();
+          if (prefixes.isEmpty() && suffixes.isEmpty()) continue;
 
           final ClassInfo clazz = annotation.type().containingClass();
           final HashMap<String, FieldInfo> candidates = new HashMap<>();
@@ -224,6 +231,11 @@ public class AndroidAuxSource implements AuxSource {
             if (field.isHiddenOrRemoved()) continue;
             for (AnnotationValueInfo prefix : prefixes) {
               if (field.name().startsWith(String.valueOf(prefix.value()))) {
+                candidates.put(String.valueOf(field.constantValue()), field);
+              }
+            }
+            for (AnnotationValueInfo suffix : suffixes) {
+              if (field.name().endsWith(String.valueOf(suffix.value()))) {
                 candidates.put(String.valueOf(field.constantValue()), field);
               }
             }
@@ -243,7 +255,7 @@ public class AndroidAuxSource implements AuxSource {
           if (!valueTags.isEmpty()) {
             Map<String, String> args = new HashMap<>();
             if (flag) args.put("flag", "true");
-            tags.add(new AuxTagInfo("@intDef", "@intDef", SourcePositionInfo.UNKNOWN, args,
+            tags.add(new AuxTagInfo(kind, kind, SourcePositionInfo.UNKNOWN, args,
                 valueTags.toArray(TagInfo.getArray(valueTags.size()))));
           }
         }
