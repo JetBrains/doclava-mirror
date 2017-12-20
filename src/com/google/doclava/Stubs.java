@@ -215,9 +215,6 @@ public class Stubs {
       }
     }
 
-    Map<PackageInfo, List<ClassInfo>> allClassesByPackage = Converter.allClasses().stream()
-        .collect(Collectors.groupingBy(ClassInfo::containingPackage));
-
     final boolean ignoreShown = Doclava.showAnnotations.isEmpty();
 
     // Write out the current API
@@ -236,6 +233,12 @@ public class Stubs {
 
     // Write out the removed API
     if (removedApiWriter != null) {
+      Map<PackageInfo, List<ClassInfo>> allClassesByPackage = Converter.allClasses().stream()
+          // Make sure that the removed file only contains information from the required packages.
+          .filter(ci -> stubPackages == null
+              || stubPackages.contains(ci.containingPackage().qualifiedName()))
+          .collect(Collectors.groupingBy(ClassInfo::containingPackage));
+
       writeApi(removedApiWriter, allClassesByPackage,
           new ApiPredicate().setIgnoreShown(ignoreShown).setMatchRemoved(true),
           new ApiPredicate().setIgnoreShown(true).setIgnoreRemoved(true));
