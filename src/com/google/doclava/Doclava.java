@@ -105,6 +105,7 @@ public class Doclava {
   public static ArtifactTagger artifactTagger = new ArtifactTagger();
   public static HashSet<String> knownTags = new HashSet<String>();
   public static FederationTagger federationTagger = new FederationTagger();
+  public static boolean showUnannotated = false;
   public static Set<String> showAnnotations = new HashSet<String>();
   public static Set<String> hideAnnotations = new HashSet<String>();
   public static boolean showAnnotationOverridesVisibility = false;
@@ -254,6 +255,8 @@ public class Doclava {
         }
       } else if (a[0].equals("-keeplist")) {
         keepListFile = a[1];
+      } else if (a[0].equals("-showUnannotated")) {
+        showUnannotated = true;
       } else if (a[0].equals("-showAnnotation")) {
         showAnnotations.add(a[1]);
       } else if (a[0].equals("-hideAnnotation")) {
@@ -375,6 +378,12 @@ public class Doclava {
       } else if (a[0].equals("-manifest")) {
         manifestFile = a[1];
       }
+    }
+
+    // If the caller has not explicitly requested that unannotated classes and members should be
+    // shown in the output then only show them if no annotations were provided.
+    if (!showUnannotated && showAnnotations.isEmpty()) {
+      showUnannotated = true;
     }
 
     if (!readKnownTagsFiles(knownTags, knownTagsFiles)) {
@@ -770,6 +779,9 @@ public class Doclava {
     }
     if (option.equals("-keeplist")) {
       return 2;
+    }
+    if (option.equals("-showUnannotated")) {
+      return 1;
     }
     if (option.equals("-showAnnotation")) {
       return 2;

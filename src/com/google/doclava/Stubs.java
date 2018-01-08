@@ -215,7 +215,7 @@ public class Stubs {
       }
     }
 
-    final boolean ignoreShown = Doclava.showAnnotations.isEmpty();
+    final boolean ignoreShown = Doclava.showUnannotated;
 
     // Write out the current API
     if (apiWriter != null) {
