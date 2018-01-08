@@ -919,7 +919,7 @@ public class ClassInfo extends DocInfo implements ContainerInfo, Comparable, Sco
    */
   public Collection<FieldInfo> filteredFields(Predicate<MemberInfo> predicate) {
     Set<FieldInfo> fields = new LinkedHashSet<>();
-    if (Doclava.showAnnotations.isEmpty()) {
+    if (Doclava.showUnannotated) {
       for (ClassInfo clazz : gatherAncestorClasses()) {
         if (!clazz.isInterface()) continue;
         for (FieldInfo field : clazz.getExhaustiveFields()) {
