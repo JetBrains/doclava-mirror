@@ -954,7 +954,7 @@ public class MethodInfo extends MemberInfo implements AbstractMethodInfo, Resolv
     return consistent;
   }
 
-  private TypeInfo getTypeParameter(String qualifiedTypeName) {
+  public TypeInfo getTypeParameter(String qualifiedTypeName) {
     if (hasTypeParameters()) {
       for (TypeInfo parameter : mTypeParameters) {
         if (parameter.qualifiedTypeName().equals(qualifiedTypeName)) {
