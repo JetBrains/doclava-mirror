@@ -21,6 +21,7 @@ import com.google.doclava.apicheck.ApiParseException;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Objects;
 
 public class FieldInfo extends MemberInfo {
@@ -89,6 +90,19 @@ public class FieldInfo extends MemberInfo {
 
   public TypeInfo type() {
     return mType;
+  }
+
+  public HashSet<String> typeVariables() {
+    HashSet<String> result = new HashSet<String>();
+    ClassInfo cl = containingClass();
+    while (cl != null) {
+      ArrayList<TypeInfo> types = cl.asTypeInfo().typeArguments();
+      if (types != null) {
+        TypeInfo.typeVariables(types, result);
+      }
+      cl = cl.containingClass();
+    }
+    return result;
   }
 
   static boolean isConstant(boolean isFinal, boolean isStatic, Object constantValue)
