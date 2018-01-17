@@ -217,11 +217,18 @@ public class Stubs {
 
     final boolean ignoreShown = Doclava.showUnannotated;
 
+    FilterPredicate apiFilter = new FilterPredicate(new ApiPredicate().setIgnoreShown(ignoreShown));
+    ApiPredicate apiReference = new ApiPredicate().setIgnoreShown(true);
+    Predicate<MemberInfo> apiEmit = apiFilter.and(new ElidingPredicate(apiReference));
+
+    FilterPredicate removedFilter =
+        new FilterPredicate(new ApiPredicate().setIgnoreShown(ignoreShown).setMatchRemoved(true));
+    ApiPredicate removedReference = new ApiPredicate().setIgnoreShown(true).setIgnoreRemoved(true);
+    Predicate<MemberInfo> removedEmit = removedFilter.and(new ElidingPredicate(removedReference));
+
     // Write out the current API
     if (apiWriter != null) {
-      writeApi(apiWriter, packages,
-          new ApiPredicate().setIgnoreShown(ignoreShown),
-          new ApiPredicate().setIgnoreShown(true));
+      writeApi(apiWriter, packages, apiEmit, apiReference);
       apiWriter.close();
     }
 
@@ -239,9 +246,7 @@ public class Stubs {
               || stubPackages.contains(ci.containingPackage().qualifiedName()))
           .collect(Collectors.groupingBy(ClassInfo::containingPackage));
 
-      writeApi(removedApiWriter, allClassesByPackage,
-          new ApiPredicate().setIgnoreShown(ignoreShown).setMatchRemoved(true),
-          new ApiPredicate().setIgnoreShown(true).setIgnoreRemoved(true));
+      writeApi(removedApiWriter, allClassesByPackage, removedEmit, removedReference);
       removedApiWriter.close();
     }
   }
@@ -1313,17 +1318,39 @@ public class Stubs {
       // override then we can elide it.
       if (member instanceof MethodInfo) {
         MethodInfo method = (MethodInfo) member;
-        String methodRaw = writeMethodApiWithoutDefault(method);
-        return (method.findPredicateOverriddenMethod(new Predicate<MemberInfo>() {
-          @Override
-          public boolean test(MemberInfo test) {
-            // We're looking for included and perfect signature
-            return (wrapped.test(test)
-                && writeMethodApiWithoutDefault((MethodInfo) test).equals(methodRaw));
-          }
-        }) == null);
-      } else {
+        if (method.returnType() != null) {  // not a constructor
+          String methodRaw = writeMethodApiWithoutDefault(method);
+          return (method.findPredicateOverriddenMethod(new Predicate<MemberInfo>() {
+            @Override
+            public boolean test(MemberInfo test) {
+              // We're looking for included and perfect signature
+              return (wrapped.test(test)
+                  && writeMethodApiWithoutDefault((MethodInfo) test).equals(methodRaw));
+            }
+          }) == null);
+        }
+      }
+      return true;
+    }
+  }
+
+  public static class FilterPredicate implements Predicate<MemberInfo> {
+    private final Predicate<MemberInfo> wrapped;
+
+    public FilterPredicate(Predicate<MemberInfo> wrapped) {
+      this.wrapped = wrapped;
+    }
+
+    @Override
+    public boolean test(MemberInfo member) {
+      if (wrapped.test(member)) {
         return true;
+      } else if (member instanceof MethodInfo) {
+        MethodInfo method = (MethodInfo) member;
+        return method.returnType() != null &&  // not a constructor
+               method.findPredicateOverriddenMethod(wrapped) != null;
+      } else {
+        return false;
       }
     }
   }
@@ -1356,8 +1383,7 @@ public class Stubs {
 
     List<MethodInfo> constructors = cl.getExhaustiveConstructors().stream().filter(filterEmit)
         .sorted(MethodInfo.comparator).collect(Collectors.toList());
-    List<MethodInfo> methods = cl.filteredMethods(filterEmit).stream()
-        .filter(new ElidingPredicate(filterReference))
+    List<MethodInfo> methods = cl.getExhaustiveMethods().stream().filter(filterEmit)
         .sorted(MethodInfo.comparator).collect(Collectors.toList());
     List<FieldInfo> enums = cl.getExhaustiveEnumConstants().stream().filter(filterEmit)
         .sorted(FieldInfo.comparator).collect(Collectors.toList());
