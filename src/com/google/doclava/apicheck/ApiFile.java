@@ -34,7 +34,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
-class ApiFile {
+public class ApiFile {
 
   public static ApiInfo parseApi(String filename, InputStream stream) throws ApiParseException {
     final int CHUNK = 1024*1024;
