@@ -47,9 +47,8 @@ import java.util.stream.Collectors;
 
 public class Stubs {
   public static void writeStubsAndApi(String stubsDir, String apiFile, String keepListFile,
-      String removedApiFile, String exactApiFile, HashSet<String> stubPackages,
-      HashSet<String> stubImportPackages,
-      boolean stubSourceOnly) {
+      String removedApiFile, String exactApiFile, String privateApiFile, String privateDexApiFile,
+      HashSet<String> stubPackages, HashSet<String> stubImportPackages, boolean stubSourceOnly) {
     // figure out which classes we need
     final HashSet<ClassInfo> notStrippable = new HashSet<ClassInfo>();
     Collection<ClassInfo> all = Converter.allClasses();
@@ -57,6 +56,8 @@ public class Stubs {
     PrintStream keepListWriter = null;
     PrintStream removedApiWriter = null;
     PrintStream exactApiWriter = null;
+    PrintStream privateApiWriter = null;
+    PrintStream privateDexApiWriter = null;
 
     if (apiFile != null) {
       try {
@@ -97,6 +98,28 @@ public class Stubs {
             new BufferedOutputStream(new FileOutputStream(exactApi)));
       } catch (FileNotFoundException e) {
         Errors.error(Errors.IO_ERROR, new SourcePositionInfo(exactApiFile, 0, 0),
+            "Cannot open file for write");
+      }
+    }
+    if (privateApiFile != null) {
+      try {
+        File privateApi = new File(privateApiFile);
+        privateApi.getParentFile().mkdirs();
+        privateApiWriter = new PrintStream(
+            new BufferedOutputStream(new FileOutputStream(privateApi)));
+      } catch (FileNotFoundException e) {
+        Errors.error(Errors.IO_ERROR, new SourcePositionInfo(privateApiFile, 0, 0),
+            "Cannot open file for write");
+      }
+    }
+    if (privateDexApiFile != null) {
+      try {
+        File privateDexApi = new File(privateDexApiFile);
+        privateDexApi.getParentFile().mkdirs();
+        privateDexApiWriter = new PrintStream(
+            new BufferedOutputStream(new FileOutputStream(privateDexApi)));
+      } catch (FileNotFoundException e) {
+        Errors.error(Errors.IO_ERROR, new SourcePositionInfo(privateDexApiFile, 0, 0),
             "Cannot open file for write");
       }
     }
@@ -217,11 +240,21 @@ public class Stubs {
 
     final boolean ignoreShown = Doclava.showUnannotated;
 
+    FilterPredicate apiFilter = new FilterPredicate(new ApiPredicate().setIgnoreShown(ignoreShown));
+    ApiPredicate apiReference = new ApiPredicate().setIgnoreShown(true);
+    Predicate<MemberInfo> apiEmit = apiFilter.and(new ElidingPredicate(apiReference));
+
+    Predicate<MemberInfo> privateEmit = apiFilter.negate();
+    Predicate<MemberInfo> privateReference = (x -> true);
+
+    FilterPredicate removedFilter =
+        new FilterPredicate(new ApiPredicate().setIgnoreShown(ignoreShown).setMatchRemoved(true));
+    ApiPredicate removedReference = new ApiPredicate().setIgnoreShown(true).setIgnoreRemoved(true);
+    Predicate<MemberInfo> removedEmit = removedFilter.and(new ElidingPredicate(removedReference));
+
     // Write out the current API
     if (apiWriter != null) {
-      writeApi(apiWriter, packages,
-          new ApiPredicate().setIgnoreShown(ignoreShown),
-          new ApiPredicate().setIgnoreShown(true));
+      writeApi(apiWriter, packages, apiEmit, apiReference);
       apiWriter.close();
     }
 
@@ -229,6 +262,18 @@ public class Stubs {
     if (keepListWriter != null) {
       writeKeepList(keepListWriter, packages, notStrippable);
       keepListWriter.close();
+    }
+
+    // Write out the private API
+    if (privateApiWriter != null) {
+      writeApi(privateApiWriter, packages, privateEmit, privateReference);
+      privateApiWriter.close();
+    }
+
+    // Write out the private API
+    if (privateDexApiWriter != null) {
+      writeDexApi(privateDexApiWriter, packages, privateEmit);
+      privateDexApiWriter.close();
     }
 
     // Write out the removed API
@@ -239,9 +284,7 @@ public class Stubs {
               || stubPackages.contains(ci.containingPackage().qualifiedName()))
           .collect(Collectors.groupingBy(ClassInfo::containingPackage));
 
-      writeApi(removedApiWriter, allClassesByPackage,
-          new ApiPredicate().setIgnoreShown(ignoreShown).setMatchRemoved(true),
-          new ApiPredicate().setIgnoreShown(true).setIgnoreRemoved(true));
+      writeApi(removedApiWriter, allClassesByPackage, removedEmit, removedReference);
       removedApiWriter.close();
     }
   }
@@ -747,7 +790,6 @@ public class Stubs {
 
     stream.println("}");
   }
-
 
   static void writeMethod(PrintStream stream, MethodInfo method, boolean isConstructor) {
     String comma;
@@ -1313,17 +1355,39 @@ public class Stubs {
       // override then we can elide it.
       if (member instanceof MethodInfo) {
         MethodInfo method = (MethodInfo) member;
-        String methodRaw = writeMethodApiWithoutDefault(method);
-        return (method.findPredicateOverriddenMethod(new Predicate<MemberInfo>() {
-          @Override
-          public boolean test(MemberInfo test) {
-            // We're looking for included and perfect signature
-            return (wrapped.test(test)
-                && writeMethodApiWithoutDefault((MethodInfo) test).equals(methodRaw));
-          }
-        }) == null);
-      } else {
+        if (method.returnType() != null) {  // not a constructor
+          String methodRaw = writeMethodApiWithoutDefault(method);
+          return (method.findPredicateOverriddenMethod(new Predicate<MemberInfo>() {
+            @Override
+            public boolean test(MemberInfo test) {
+              // We're looking for included and perfect signature
+              return (wrapped.test(test)
+                  && writeMethodApiWithoutDefault((MethodInfo) test).equals(methodRaw));
+            }
+          }) == null);
+        }
+      }
+      return true;
+    }
+  }
+
+  public static class FilterPredicate implements Predicate<MemberInfo> {
+    private final Predicate<MemberInfo> wrapped;
+
+    public FilterPredicate(Predicate<MemberInfo> wrapped) {
+      this.wrapped = wrapped;
+    }
+
+    @Override
+    public boolean test(MemberInfo member) {
+      if (wrapped.test(member)) {
         return true;
+      } else if (member instanceof MethodInfo) {
+        MethodInfo method = (MethodInfo) member;
+        return method.returnType() != null &&  // not a constructor
+               method.findPredicateOverriddenMethod(wrapped) != null;
+      } else {
+        return false;
       }
     }
   }
@@ -1347,6 +1411,19 @@ public class Stubs {
     }
   }
 
+  static void writeDexApi(PrintStream apiWriter, Map<PackageInfo, List<ClassInfo>> classesByPackage,
+      Predicate<MemberInfo> filterEmit) {
+    for (PackageInfo pkg : classesByPackage.keySet().stream().sorted(PackageInfo.comparator)
+        .collect(Collectors.toList())) {
+      if (pkg.name().equals(PackageInfo.DEFAULT_PACKAGE)) continue;
+
+      for (ClassInfo clazz : classesByPackage.get(pkg).stream().sorted(ClassInfo.comparator)
+          .collect(Collectors.toList())) {
+        writeClassDexApi(apiWriter, clazz, filterEmit);
+      }
+    }
+  }
+
   /**
    * Write the removed members of the class to removed.txt
    */
@@ -1356,8 +1433,7 @@ public class Stubs {
 
     List<MethodInfo> constructors = cl.getExhaustiveConstructors().stream().filter(filterEmit)
         .sorted(MethodInfo.comparator).collect(Collectors.toList());
-    List<MethodInfo> methods = cl.filteredMethods(filterEmit).stream()
-        .filter(new ElidingPredicate(filterReference))
+    List<MethodInfo> methods = cl.getExhaustiveMethods().stream().filter(filterEmit)
         .sorted(MethodInfo.comparator).collect(Collectors.toList());
     List<FieldInfo> enums = cl.getExhaustiveEnumConstants().stream().filter(filterEmit)
         .sorted(FieldInfo.comparator).collect(Collectors.toList());
@@ -1469,6 +1545,36 @@ public class Stubs {
 
     apiWriter.print("  }\n\n");
     return hasWrittenPackageHead;
+  }
+
+  private static void writeClassDexApi(PrintStream apiWriter, ClassInfo cl,
+      Predicate<MemberInfo> filterEmit) {
+    if (filterEmit.test(cl.asMemberInfo())) {
+      apiWriter.print(toSlashFormat(cl.qualifiedName()));
+      apiWriter.print("\n");
+    }
+
+    List<MethodInfo> constructors = cl.getExhaustiveConstructors().stream().filter(filterEmit)
+        .sorted(MethodInfo.comparator).collect(Collectors.toList());
+    List<MethodInfo> methods = cl.getExhaustiveMethods().stream().filter(filterEmit)
+        .sorted(MethodInfo.comparator).collect(Collectors.toList());
+    List<FieldInfo> enums = cl.getExhaustiveEnumConstants().stream().filter(filterEmit)
+        .sorted(FieldInfo.comparator).collect(Collectors.toList());
+    List<FieldInfo> fields = cl.filteredFields(filterEmit).stream()
+        .sorted(FieldInfo.comparator).collect(Collectors.toList());
+
+    for (MethodInfo mi : constructors) {
+      writeMethodDexApi(apiWriter, cl, mi);
+    }
+    for (MethodInfo mi : methods) {
+      writeMethodDexApi(apiWriter, cl, mi);
+    }
+    for (FieldInfo fi : enums) {
+      writeFieldDexApi(apiWriter, cl, fi);
+    }
+    for (FieldInfo fi : fields) {
+      writeFieldDexApi(apiWriter, cl, fi);
+    }
   }
 
   private static void checkSystemPermissions(MethodInfo mi) {
@@ -1624,6 +1730,23 @@ public class Stubs {
     apiWriter.print(";\n");
   }
 
+  static void writeMethodDexApi(PrintStream apiWriter, ClassInfo cl, MethodInfo mi) {
+    apiWriter.print(toSlashFormat(cl.qualifiedName()));
+    apiWriter.print("->");
+    if (mi.returnType() == null) {
+      apiWriter.print("<init>");
+    } else {
+      apiWriter.print(mi.name());
+    }
+    writeParametersDexApi(apiWriter, mi, mi.parameters());
+    if (mi.returnType() == null) {  // constructor
+      apiWriter.print("V");
+    } else {
+      apiWriter.print(toSlashFormat(mi.returnType().dexName()));
+    }
+    apiWriter.print("\n");
+  }
+
   static void writeParametersApi(PrintStream apiWriter, MethodInfo method,
       ArrayList<ParameterInfo> params) {
     apiWriter.print("(");
@@ -1640,6 +1763,19 @@ public class Stubs {
       }
     }
 
+    apiWriter.print(")");
+  }
+
+  static void writeParametersDexApi(PrintStream apiWriter, MethodInfo method,
+      ArrayList<ParameterInfo> params) {
+    apiWriter.print("(");
+    for (ParameterInfo pi : params) {
+      String typeName = pi.type().dexName();
+      if (method.isVarArgs() && pi == params.get(params.size() - 1)) {
+        typeName += "[]";
+      }
+      apiWriter.print(toSlashFormat(typeName));
+    }
     apiWriter.print(")");
   }
 
@@ -1686,7 +1822,7 @@ public class Stubs {
     }
 
     apiWriter.print(" ");
-    apiWriter.print(fi.type().fullName());
+    apiWriter.print(fi.type().fullName(fi.typeVariables()));
 
     apiWriter.print(" ");
     apiWriter.print(fi.name());
@@ -1711,6 +1847,15 @@ public class Stubs {
       }
     }
 
+    apiWriter.print("\n");
+  }
+
+  static void writeFieldDexApi(PrintStream apiWriter, ClassInfo cl, FieldInfo fi) {
+    apiWriter.print(toSlashFormat(cl.qualifiedName()));
+    apiWriter.print("->");
+    apiWriter.print(fi.name());
+    apiWriter.print(":");
+    apiWriter.print(toSlashFormat(fi.type().dexName()));
     apiWriter.print("\n");
   }
 
@@ -1873,6 +2018,39 @@ public class Stubs {
       pos = pos + 1;
     }
     return name;
+  }
+
+  static String toSlashFormat(String name) {
+    String dimension = "";
+    while (name.endsWith("[]")) {
+      dimension += "[";
+      name = name.substring(0, name.length() - 2);
+    }
+
+    final String base;
+    if (name.equals("void")) {
+      base = "V";
+    } else if (name.equals("byte")) {
+      base = "B";
+    } else if (name.equals("boolean")) {
+      base = "Z";
+    } else if (name.equals("char")) {
+      base = "C";
+    } else if (name.equals("short")) {
+      base = "S";
+    } else if (name.equals("int")) {
+      base = "I";
+    } else if (name.equals("long")) {
+      base = "L";
+    } else if (name.equals("float")) {
+      base = "F";
+    } else if (name.equals("double")) {
+      base = "D";
+    } else {
+      base = "L" + to$Class(name).replace(".", "/") + ";";
+    }
+
+    return dimension + base;
   }
 
   static String getCleanTypeName(TypeInfo t) {
