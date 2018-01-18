@@ -47,9 +47,8 @@ import java.util.stream.Collectors;
 
 public class Stubs {
   public static void writeStubsAndApi(String stubsDir, String apiFile, String keepListFile,
-      String removedApiFile, String exactApiFile, HashSet<String> stubPackages,
-      HashSet<String> stubImportPackages,
-      boolean stubSourceOnly) {
+      String removedApiFile, String exactApiFile, String privateApiFile,
+      HashSet<String> stubPackages, HashSet<String> stubImportPackages, boolean stubSourceOnly) {
     // figure out which classes we need
     final HashSet<ClassInfo> notStrippable = new HashSet<ClassInfo>();
     Collection<ClassInfo> all = Converter.allClasses();
@@ -57,6 +56,7 @@ public class Stubs {
     PrintStream keepListWriter = null;
     PrintStream removedApiWriter = null;
     PrintStream exactApiWriter = null;
+    PrintStream privateApiWriter = null;
 
     if (apiFile != null) {
       try {
@@ -97,6 +97,17 @@ public class Stubs {
             new BufferedOutputStream(new FileOutputStream(exactApi)));
       } catch (FileNotFoundException e) {
         Errors.error(Errors.IO_ERROR, new SourcePositionInfo(exactApiFile, 0, 0),
+            "Cannot open file for write");
+      }
+    }
+    if (privateApiFile != null) {
+      try {
+        File privateApi = new File(privateApiFile);
+        privateApi.getParentFile().mkdirs();
+        privateApiWriter = new PrintStream(
+            new BufferedOutputStream(new FileOutputStream(privateApi)));
+      } catch (FileNotFoundException e) {
+        Errors.error(Errors.IO_ERROR, new SourcePositionInfo(privateApiFile, 0, 0),
             "Cannot open file for write");
       }
     }
@@ -221,6 +232,9 @@ public class Stubs {
     ApiPredicate apiReference = new ApiPredicate().setIgnoreShown(true);
     Predicate<MemberInfo> apiEmit = apiFilter.and(new ElidingPredicate(apiReference));
 
+    Predicate<MemberInfo> privateEmit = apiFilter.negate();
+    Predicate<MemberInfo> privateReference = (x -> true);
+
     FilterPredicate removedFilter =
         new FilterPredicate(new ApiPredicate().setIgnoreShown(ignoreShown).setMatchRemoved(true));
     ApiPredicate removedReference = new ApiPredicate().setIgnoreShown(true).setIgnoreRemoved(true);
@@ -236,6 +250,12 @@ public class Stubs {
     if (keepListWriter != null) {
       writeKeepList(keepListWriter, packages, notStrippable);
       keepListWriter.close();
+    }
+
+    // Write out the private API
+    if (privateApiWriter != null) {
+      writeApi(privateApiWriter, packages, privateEmit, privateReference);
+      privateApiWriter.close();
     }
 
     // Write out the removed API
@@ -1712,7 +1732,7 @@ public class Stubs {
     }
 
     apiWriter.print(" ");
-    apiWriter.print(fi.type().fullName());
+    apiWriter.print(fi.type().fullName(fi.typeVariables()));
 
     apiWriter.print(" ");
     apiWriter.print(fi.name());
