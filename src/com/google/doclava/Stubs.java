@@ -2041,7 +2041,7 @@ public class Stubs {
     } else if (name.equals("int")) {
       base = "I";
     } else if (name.equals("long")) {
-      base = "L";
+      base = "J";
     } else if (name.equals("float")) {
       base = "F";
     } else if (name.equals("double")) {
