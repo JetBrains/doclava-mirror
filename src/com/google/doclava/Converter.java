@@ -474,15 +474,20 @@ public class Converter {
         return result;
       } else if (o instanceof MethodDoc) {
         MethodDoc m = (MethodDoc) o;
+        final ClassInfo containingClass = Converter.obtainClass(m.containingClass());
+
+        // The containing class is final, so it is implied that every method is final as well.
+        // No need to apply 'final' to each method.
+        final boolean isMethodFinal = m.isFinal() && !containingClass.isFinal();
         MethodInfo result =
             new MethodInfo(m.getRawCommentText(),
                     new ArrayList<TypeInfo>(Arrays.asList(
                             Converter.convertTypes(m.typeParameters()))), m.name(), m.signature(),
-                    Converter.obtainClass(m.containingClass()),
-                    Converter.obtainClass(m.containingClass()), m.isPublic(), m.isProtected(),
-                    m.isPackagePrivate(), m.isPrivate(), m.isFinal(), m.isStatic(), m.isSynthetic(),
-                    m.isAbstract(), m.isSynchronized(), m.isNative(), m.isDefault(), false,
-                    "method", m.flatSignature(), Converter.obtainMethod(m.overriddenMethod()),
+                    containingClass, containingClass, m.isPublic(), m.isProtected(),
+                    m.isPackagePrivate(), m.isPrivate(), isMethodFinal, m.isStatic(),
+                    m.isSynthetic(), m.isAbstract(), m.isSynchronized(), m.isNative(),
+                    m.isDefault(), false, "method", m.flatSignature(),
+                    Converter.obtainMethod(m.overriddenMethod()),
                     Converter.obtainType(m.returnType()),
                     new ArrayList<ParameterInfo>(Arrays.asList(
                             Converter.convertParameters(m.parameters(), m))),
