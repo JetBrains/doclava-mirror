@@ -282,7 +282,7 @@ public class TypeInfo implements Resolvable {
         return "java.lang.Object" + mDimension;
       }
     }
-    return qualifiedTypeName();
+    return mQualifiedTypeName + mDimension;
   }
 
   public ArrayList<TypeInfo> typeArguments() {
