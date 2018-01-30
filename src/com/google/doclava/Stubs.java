@@ -52,6 +52,7 @@ public class Stubs {
     // figure out which classes we need
     final HashSet<ClassInfo> notStrippable = new HashSet<ClassInfo>();
     Collection<ClassInfo> all = Converter.allClasses();
+    Map<PackageInfo, List<ClassInfo>> allClassesByPackage = null;
     PrintStream apiWriter = null;
     PrintStream keepListWriter = null;
     PrintStream removedApiWriter = null;
@@ -238,6 +239,14 @@ public class Stubs {
       }
     }
 
+    if (privateApiWriter != null || privateDexApiWriter != null || removedApiWriter != null) {
+      allClassesByPackage = Converter.allClasses().stream()
+          // Make sure that the files only contains information from the required packages.
+          .filter(ci -> stubPackages == null
+              || stubPackages.contains(ci.containingPackage().qualifiedName()))
+          .collect(Collectors.groupingBy(ClassInfo::containingPackage));
+    }
+
     final boolean ignoreShown = Doclava.showUnannotated;
 
     FilterPredicate apiFilter = new FilterPredicate(new ApiPredicate().setIgnoreShown(ignoreShown));
@@ -266,24 +275,18 @@ public class Stubs {
 
     // Write out the private API
     if (privateApiWriter != null) {
-      writeApi(privateApiWriter, packages, privateEmit, privateReference);
+      writeApi(privateApiWriter, allClassesByPackage, privateEmit, privateReference);
       privateApiWriter.close();
     }
 
     // Write out the private API
     if (privateDexApiWriter != null) {
-      writeDexApi(privateDexApiWriter, packages, privateEmit);
+      writeDexApi(privateDexApiWriter, allClassesByPackage, privateEmit);
       privateDexApiWriter.close();
     }
 
     // Write out the removed API
     if (removedApiWriter != null) {
-      Map<PackageInfo, List<ClassInfo>> allClassesByPackage = Converter.allClasses().stream()
-          // Make sure that the removed file only contains information from the required packages.
-          .filter(ci -> stubPackages == null
-              || stubPackages.contains(ci.containingPackage().qualifiedName()))
-          .collect(Collectors.groupingBy(ClassInfo::containingPackage));
-
       writeApi(removedApiWriter, allClassesByPackage, removedEmit, removedReference);
       removedApiWriter.close();
     }
