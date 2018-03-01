@@ -1586,11 +1586,10 @@ public class Stubs {
       if (a.type().qualifiedNameMatches("android", "annotation.RequiresPermission")) {
         hasAnnotation = true;
         for (AnnotationValueInfo val : a.elementValues()) {
-          ArrayList<AnnotationValueInfo> values = null;
+          ArrayList<AnnotationValueInfo> values = new ArrayList<>();
           boolean any = false;
           switch (val.element().name()) {
             case "value":
-              values = new ArrayList<AnnotationValueInfo>();
               values.add(val);
               break;
             case "allOf":
@@ -1601,6 +1600,7 @@ public class Stubs {
               values = (ArrayList<AnnotationValueInfo>) val.value();
               break;
           }
+          if (values.isEmpty()) continue;
 
           ArrayList<String> system = new ArrayList<>();
           ArrayList<String> nonSystem = new ArrayList<>();
