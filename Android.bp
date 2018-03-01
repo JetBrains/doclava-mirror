@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+droiddoc_template {
+    name: "droiddoc-templates-sdk",
+    path: "res/assets/templates-sdk",
+}
+
 java_library_host {
     name: "doclava",
     srcs: [
