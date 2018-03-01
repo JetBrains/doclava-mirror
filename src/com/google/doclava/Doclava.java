@@ -120,6 +120,7 @@ public class Doclava {
   public static Map<String, String> annotationDocumentationMap = null;
   public static boolean referenceOnly = false;
   public static boolean staticOnly = false;
+  public static boolean yamlV2 = false; /* whether to build the new version of the yaml file */
   public static AuxSource auxSource = new EmptyAuxSource();
   public static Linter linter = new EmptyLinter();
   public static boolean android = false;
@@ -365,6 +366,8 @@ public class Doclava {
         NAVTREE_ONLY = true;
       } else if (a[0].equals("-atLinksNavtree")) {
         AT_LINKS_NAVTREE = true;
+      } else if (a[0].equals("-yamlV2")) {
+        yamlV2 = true;
       } else if (a[0].equals("-devsite")) {
         // Don't copy any assets to devsite output
         includeAssets = false;
@@ -512,6 +515,12 @@ public class Doclava {
         // Write yaml tree.
         if (yamlNavFile != null){
           NavTree.writeYamlTree(javadocDir, yamlNavFile);
+          if (yamlV2) {
+            // Generate both for good measure, to make transitions easier, but change the filename
+            // for the new one so there's yet another explicit opt-in required by fixing the name.
+            yamlNavFile = "_NEW" + yamlNavFile;
+            NavTree.writeYamlTree2(javadocDir, yamlNavFile);
+          }
         }
 
         // Packages Pages
@@ -740,6 +749,9 @@ public class Doclava {
       return 2;
     }
     if (option.equals("-devsite")) {
+      return 1;
+    }
+    if (option.equals("-yamlV2")) {
       return 1;
     }
     if (option.equals("-dac_libraryroot")) {
