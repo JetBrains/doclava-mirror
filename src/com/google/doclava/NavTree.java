@@ -342,10 +342,12 @@ public class NavTree {
         buf.append("\n" + getIndent(depth));
         buf.append("  path: ");
         renderStringYaml(buf, "/" + mLink);
-        // and the API level also only makes sense if there's a link
-        buf.append("\n" + getIndent(depth));
-        buf.append("  version_added: ");
-        renderStringYaml(buf, mSince);
+        // add the API level info only if we have it
+        if (mSince != null) {
+          buf.append("\n" + getIndent(depth));
+          buf.append("  version_added: ");
+          renderStringYaml(buf, "'" + mSince + "'");
+        }
       }
       // try rendering child Nodes
       renderChildrenYaml(buf, depth + 1);
