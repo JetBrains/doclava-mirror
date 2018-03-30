@@ -235,7 +235,7 @@
   <p><b>Related methods:</b></p>
   <ul class="nolist">
   <?cs each:m=attr.methods ?>
-    <li><a href="<?cs var:toroot ?><?cs var:m.href ?>"><?cs var:m.name ?></a></li>
+    <li><code><a href="<?cs var:toroot ?><?cs var:m.href ?>"><?cs var:m.name ?></a></code></li>
   <?cs /each ?>
   </ul>
 <?cs /if ?>
@@ -341,14 +341,11 @@
 if:subcount(class.subclasses.direct) && !class.subclasses.hidden ?>
   <table class="jd-sumtable jd-sumtable-subclasses">
     <tr>
-      <td style="border:none;margin:0;padding:0;"><?cs
-        if:enable_javascript ?>
-          <?cs call:expando_trigger("subclasses-direct", "closed") ?><span>Known Direct Subclasses</span>
-          <?cs call:expandable_class_list("subclasses-direct", class.subclasses.direct, "list") ?><?cs
-        else ?>
-          <span>Known Direct Subclasses</span>
-          <?cs call:expandable_class_list("subclasses-direct", class.subclasses.direct, "summary") ?><?cs
-        /if ?>
+      <td>
+        <div class="expandable">
+          <span class="expand-control">Known direct subclasses</span>
+          <?cs call:expandable_class_list("subclasses-direct", class.subclasses.direct, "list") ?>
+        </div>
       </td>
     </tr>
   </table>
@@ -356,14 +353,11 @@ if:subcount(class.subclasses.direct) && !class.subclasses.hidden ?>
   <?cs if:subcount(class.subclasses.indirect) && !class.subclasses.hidden ?>
   <table class="jd-sumtable jd-sumtable-subclasses">
     <tr>
-      <td colspan="2" style="border:none;margin:0;padding:0;"><?cs
-        if:enable_javascript ?>
-          <?cs call:expando_trigger("subclasses-indirect", "closed") ?><span>Known Indirect Subclasses</span>
-          <?cs call:expandable_class_list("subclasses-indirect", class.subclasses.indirect, "list") ?><?cs
-        else ?>
-          <span>Known Indirect Subclasses</span>
-          <?cs call:expandable_class_list("subclasses-indirect", class.subclasses.indirect, "summary") ?><?cs
-        /if ?>
+      <td>
+        <div class="expandable">
+          <span class="expand-control">Known indirect subclasses</span>
+          <?cs call:expandable_class_list("subclasses-indirect", class.subclasses.indirect, "list") ?>
+        </div>
       </td>
     </tr>
   </table><?cs
@@ -436,23 +430,15 @@ if:subcount(class.subclasses.direct) && !class.subclasses.hidden ?>
     if:cl.deprecatedsince
       ?> data-version-deprecated="<?cs var:cl.deprecatedsince ?>"<?cs
     /if ?> >
-<td colspan="2"><?cs
-  if:enable_javascript ?><?cs
-    call:expando_trigger("inherited-attrs-"+cl.qualified, "closed") ?><?cs
-  /if ?>From
-<?cs var:cl.kind ?>
-<code>
-  <?cs call:cond_link(cl.qualified, toroot, cl.link, cl.included) ?>
-</code>
-<div id="inherited-attrs-<?cs var:cl.qualified ?>">
-  <div id="inherited-attrs-<?cs var:cl.qualified ?>-list"
-        class="jd-inheritedlinks">
+<td colspan="2">
+  <div class="expandable jd-inherited-apis">
+    <span class="expand-control">From <?cs var:cl.kind ?>
+      <code><?cs call:cond_link(cl.qualified, toroot, cl.link, cl.included) ?></code>
+    </span>
+    <table class="responsive">
+      <?cs call:write_attr_summary(cl.attrs, cl.included) ?>
+    </table>
   </div>
-  <div id="inherited-attrs-<?cs var:cl.qualified ?>-summary" style="display: none;">
-    <table class="jd-sumtable-expando">
-    <?cs call:write_attr_summary(cl.attrs, cl.included) ?></table>
-  </div>
-</div>
 </td></tr>
 <?cs /if ?>
 <?cs /each ?>
@@ -508,23 +494,15 @@ if:subcount(class.subclasses.direct) && !class.subclasses.hidden ?>
       if:cl.deprecatedsince
         ?> data-version-deprecated="<?cs var:cl.deprecatedsince ?>"<?cs
       /if ?> >
-  <td><?cs
-    if:enable_javascript ?><?cs
-      call:expando_trigger("inherited-constants-"+cl.qualified, "closed") ?><?cs
-    /if ?>From
-  <?cs var:cl.kind ?>
-  <code>
-    <?cs call:cond_link(cl.qualified, toroot, cl.link, cl.included) ?>
-  </code>
-  <div id="inherited-constants-<?cs var:cl.qualified ?>">
-    <div id="inherited-constants-<?cs var:cl.qualified ?>-list"
-          class="jd-inheritedlinks">
+  <td>
+    <div class="expandable jd-inherited-apis">
+      <span class="expand-control">From <?cs var:cl.kind ?>
+        <code><?cs call:cond_link(cl.qualified, toroot, cl.link, cl.included) ?></code>
+      </span>
+      <table class="responsive">
+        <?cs call:write_constant_summary(cl.constants, cl.included) ?>
+      </table>
     </div>
-    <div id="inherited-constants-<?cs var:cl.qualified ?>-summary" style="display: none;">
-      <table class="jd-sumtable-expando responsive">
-      <?cs call:write_constant_summary(cl.constants, cl.included) ?></table>
-    </div>
-  </div>
   </td></tr>
 <?cs /if ?>
 <?cs /each ?>
@@ -544,7 +522,7 @@ if:subcount(class.subclasses.direct) && !class.subclasses.hidden ?>
 <?cs if:inhfields ?>
 <?cs # this next line must be exactly like this to be parsed by eclipse ?>
 <!-- =========== FIELD SUMMARY =========== -->
-<table id="inhfields" class="properties inhtable">
+<table id="inhfields" class="responsive properties inhtable">
 <tr><th><h3>Inherited fields</h3></th></tr>
 <?cs each:cl=class.inherited ?>
 <?cs if:subcount(cl.fields) ?>
@@ -555,23 +533,15 @@ if:subcount(class.subclasses.direct) && !class.subclasses.hidden ?>
       if:cl.deprecatedsince
         ?> data-version-deprecated="<?cs var:cl.deprecatedsince ?>"<?cs
       /if ?> >
-  <td><?cs
-    if:enable_javascript ?><?cs
-      call:expando_trigger("inherited-fields-"+cl.qualified, "closed") ?><?cs
-    /if ?>From
-  <?cs var:cl.kind ?>
-  <code>
-    <?cs call:cond_link(cl.qualified, toroot, cl.link, cl.included) ?>
-  </code>
-  <div id="inherited-fields-<?cs var:cl.qualified ?>">
-    <div id="inherited-fields-<?cs var:cl.qualified ?>-list"
-          class="jd-inheritedlinks">
+  <td>
+    <div class="expandable jd-inherited-apis">
+      <span class="expand-control">From <?cs var:cl.kind ?>
+        <code><?cs call:cond_link(cl.qualified, toroot, cl.link, cl.included) ?></code>
+      </span>
+      <table class="responsive">
+        <?cs call:write_field_summary(cl.fields, cl.included) ?>
+      </table>
     </div>
-    <div id="inherited-fields-<?cs var:cl.qualified ?>-summary" style="display: none;">
-      <table class="jd-sumtable-expando responsive">
-      <?cs call:write_field_summary(cl.fields, cl.included) ?></table>
-    </div>
-  </div>
   </td></tr>
 <?cs /if ?>
 <?cs /each ?>
@@ -618,7 +588,7 @@ if:subcount(class.subclasses.direct) && !class.subclasses.hidden ?>
 <?cs if:inhmethods ?>
 <?cs # this next line must be exactly like this to be parsed by eclipse ?>
 <!-- ========== METHOD SUMMARY =========== -->
-<table id="inhmethods" class="methods inhtable">
+<table id="inhmethods" class="responsive methods inhtable">
 <tr><th><h3>Inherited methods</h3></th></tr>
 <?cs each:cl=class.inherited ?>
 <?cs if:subcount(cl.methods) ?>
@@ -629,30 +599,23 @@ if:subcount(class.subclasses.direct) && !class.subclasses.hidden ?>
     if:cl.deprecatedsince
       ?> data-version-deprecated="<?cs var:cl.deprecatedsince ?>"<?cs
     /if ?> >
-<td colspan="2"><?cs
-  if:enable_javascript ?><?cs
-    call:expando_trigger("inherited-methods-"+cl.qualified, "closed") ?><?cs
-  /if ?>From
-<?cs var:cl.kind ?>
-<code>
-  <?cs if:cl.included ?>
-    <a href="<?cs var:toroot ?><?cs var:cl.link ?>"><?cs var:cl.qualified ?></a>
-  <?cs elif:cl.federated ?>
-    <a href="<?cs var:cl.link ?>"><?cs var:cl.qualified ?></a>
-  <?cs else ?>
-    <?cs var:cl.qualified ?>
-  <?cs /if ?>
-</code>
-<div id="inherited-methods-<?cs var:cl.qualified ?>">
-  <div id="inherited-methods-<?cs var:cl.qualified ?>-list"
-        class="jd-inheritedlinks">
-  </div>
-  <div id="inherited-methods-<?cs var:cl.qualified ?>-summary" style="display: none;">
-    <table class="jd-sumtable-expando responsive">
+<td colspan="2">
+  <div class="expandable jd-inherited-apis">
+    <span class="expand-control">From <?cs var:cl.kind ?>
+      <code>
+        <?cs if:cl.included ?>
+          <a href="<?cs var:toroot ?><?cs var:cl.link ?>"><?cs var:cl.qualified ?></a>
+        <?cs elif:cl.federated ?>
+          <a href="<?cs var:cl.link ?>"><?cs var:cl.qualified ?></a>
+        <?cs else ?>
+          <?cs var:cl.qualified ?>
+        <?cs /if ?>
+      </code>
+    </span>
+    <table class="responsive">
       <?cs call:write_method_summary(cl.methods, cl.included) ?>
     </table>
   </div>
-</div>
 </td></tr>
 <?cs /if ?>
 <?cs /each ?>
