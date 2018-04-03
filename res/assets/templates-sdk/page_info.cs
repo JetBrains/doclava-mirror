@@ -108,7 +108,6 @@ Summary:
 <?cs if:inhmethods ?>
   <?cs if:linkcount ?>&#124; <?cs /if ?><a href="#inhmethods">Inherited Methods</a>
 <?cs /if ?>
-&#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 <?cs /if ?>
 </div><!-- end sum-details-links -->
 </div><!-- end api-info-block --><?cs
