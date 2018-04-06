@@ -1774,11 +1774,7 @@ public class Stubs {
       ArrayList<ParameterInfo> params) {
     apiWriter.print("(");
     for (ParameterInfo pi : params) {
-      String typeName = pi.type().dexName();
-      if (method.isVarArgs() && pi == params.get(params.size() - 1)) {
-        typeName += "[]";
-      }
-      apiWriter.print(toSlashFormat(typeName));
+      apiWriter.print(toSlashFormat(pi.type().dexName()));
     }
     apiWriter.print(")");
   }
