@@ -1558,13 +1558,8 @@ public class Stubs {
     List<FieldInfo> fields = cl.getExhaustiveFields().stream().filter(filterEmit)
         .sorted(FieldInfo.comparator).collect(Collectors.toList());
 
-    // Do not generate constructors for enums. Doclava assumes they have
-    // a no-argument default constructor, but the compiler will generate
-    // synthetic private constructors instead.
-    if (!cl.isEnum()) {
-      for (MethodInfo mi : constructors) {
-        writeMethodDexApi(apiWriter, cl, mi);
-      }
+    for (MethodInfo mi : constructors) {
+      writeMethodDexApi(apiWriter, cl, mi);
     }
     for (MethodInfo mi : methods) {
       writeMethodDexApi(apiWriter, cl, mi);
@@ -1769,11 +1764,6 @@ public class Stubs {
   static void writeParametersDexApi(PrintStream apiWriter, MethodInfo method,
       ArrayList<ParameterInfo> params) {
     apiWriter.print("(");
-    if (method.returnType() == null &&
-        method.containingClass().containingClass() != null &&
-        !method.containingClass().isStatic()) {
-      apiWriter.print(toSlashFormat(method.containingClass().containingClass().type().dexName()));
-    }
     for (ParameterInfo pi : params) {
       String typeName = pi.type().dexName();
       if (method.isVarArgs() && pi == params.get(params.size() - 1)) {
