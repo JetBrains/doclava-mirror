@@ -253,7 +253,8 @@ public class Stubs {
     ApiPredicate apiReference = new ApiPredicate().setIgnoreShown(true);
     Predicate<MemberInfo> apiEmit = apiFilter.and(new ElidingPredicate(apiReference));
 
-    Predicate<MemberInfo> privateEmit = apiFilter.negate();
+    Predicate<MemberInfo> memberIsNotCloned = (x -> !x.isCloned());
+    Predicate<MemberInfo> privateEmit = memberIsNotCloned.and(apiFilter.negate());
     Predicate<MemberInfo> privateReference = (x -> true);
 
     FilterPredicate removedFilter =
@@ -1563,7 +1564,7 @@ public class Stubs {
         .sorted(MethodInfo.comparator).collect(Collectors.toList());
     List<FieldInfo> enums = cl.getExhaustiveEnumConstants().stream().filter(filterEmit)
         .sorted(FieldInfo.comparator).collect(Collectors.toList());
-    List<FieldInfo> fields = cl.filteredFields(filterEmit).stream()
+    List<FieldInfo> fields = cl.getExhaustiveFields().stream().filter(filterEmit)
         .sorted(FieldInfo.comparator).collect(Collectors.toList());
 
     for (MethodInfo mi : constructors) {
