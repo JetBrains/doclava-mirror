@@ -47,8 +47,9 @@ import java.util.stream.Collectors;
 
 public class Stubs {
   public static void writeStubsAndApi(String stubsDir, String apiFile, String keepListFile,
-      String removedApiFile, String exactApiFile, String privateApiFile, String privateDexApiFile,
-      HashSet<String> stubPackages, HashSet<String> stubImportPackages, boolean stubSourceOnly) {
+      String removedApiFile, String removedDexApiFile, String exactApiFile, String privateApiFile,
+      String privateDexApiFile, HashSet<String> stubPackages, HashSet<String> stubImportPackages,
+      boolean stubSourceOnly) {
     // figure out which classes we need
     final HashSet<ClassInfo> notStrippable = new HashSet<ClassInfo>();
     Collection<ClassInfo> all = Converter.allClasses();
@@ -56,6 +57,7 @@ public class Stubs {
     PrintStream apiWriter = null;
     PrintStream keepListWriter = null;
     PrintStream removedApiWriter = null;
+    PrintStream removedDexApiWriter = null;
     PrintStream exactApiWriter = null;
     PrintStream privateApiWriter = null;
     PrintStream privateDexApiWriter = null;
@@ -88,6 +90,17 @@ public class Stubs {
             new BufferedOutputStream(new FileOutputStream(removedApi)));
       } catch (FileNotFoundException e) {
         Errors.error(Errors.IO_ERROR, new SourcePositionInfo(removedApiFile, 0, 0),
+            "Cannot open file for write");
+      }
+    }
+    if (removedDexApiFile != null) {
+      try {
+        File removedDexApi = new File(removedDexApiFile);
+        removedDexApi.getParentFile().mkdirs();
+        removedDexApiWriter = new PrintStream(
+            new BufferedOutputStream(new FileOutputStream(removedDexApi)));
+      } catch (FileNotFoundException e) {
+        Errors.error(Errors.IO_ERROR, new SourcePositionInfo(removedDexApiFile, 0, 0),
             "Cannot open file for write");
       }
     }
@@ -239,7 +252,8 @@ public class Stubs {
       }
     }
 
-    if (privateApiWriter != null || privateDexApiWriter != null || removedApiWriter != null) {
+    if (privateApiWriter != null || privateDexApiWriter != null || removedApiWriter != null
+            || removedDexApiWriter != null) {
       allClassesByPackage = Converter.allClasses().stream()
           // Make sure that the files only contains information from the required packages.
           .filter(ci -> stubPackages == null
@@ -249,11 +263,12 @@ public class Stubs {
 
     final boolean ignoreShown = Doclava.showUnannotated;
 
+    Predicate<MemberInfo> memberIsNotCloned = (x -> !x.isCloned());
+
     FilterPredicate apiFilter = new FilterPredicate(new ApiPredicate().setIgnoreShown(ignoreShown));
     ApiPredicate apiReference = new ApiPredicate().setIgnoreShown(true);
     Predicate<MemberInfo> apiEmit = apiFilter.and(new ElidingPredicate(apiReference));
 
-    Predicate<MemberInfo> memberIsNotCloned = (x -> !x.isCloned());
     Predicate<MemberInfo> privateEmit = memberIsNotCloned.and(apiFilter.negate());
     Predicate<MemberInfo> privateReference = (x -> true);
 
@@ -261,6 +276,7 @@ public class Stubs {
         new FilterPredicate(new ApiPredicate().setIgnoreShown(ignoreShown).setMatchRemoved(true));
     ApiPredicate removedReference = new ApiPredicate().setIgnoreShown(true).setIgnoreRemoved(true);
     Predicate<MemberInfo> removedEmit = removedFilter.and(new ElidingPredicate(removedReference));
+    Predicate<MemberInfo> removedDexEmit = memberIsNotCloned.and(removedFilter);
 
     // Write out the current API
     if (apiWriter != null) {
@@ -290,6 +306,12 @@ public class Stubs {
     if (removedApiWriter != null) {
       writeApi(removedApiWriter, allClassesByPackage, removedEmit, removedReference);
       removedApiWriter.close();
+    }
+
+    // Write out the removed DEX API
+    if (removedDexApiWriter != null) {
+      writeDexApi(removedDexApiWriter, allClassesByPackage, removedDexEmit);
+      removedDexApiWriter.close();
     }
   }
 
