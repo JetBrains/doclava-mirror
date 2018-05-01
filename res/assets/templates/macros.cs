@@ -8,7 +8,10 @@ if:dac ?><?cs
 
 <?cs # A link to a package ?><?cs
 def:package_link(pkg) ?>
-  <a href="<?cs var:toroot ?><?cs var:pkg.link ?>"><?cs var:pkg.name ?></a><?cs
+  <a href="<?cs
+          if:!pkg.federatedSite ?><?cs
+            var:toroot ?><?cs
+          /if ?><?cs var:pkg.link ?>"><?cs var:pkg.name ?></a><?cs
   /def ?><?cs
 
 # A link to a type, or not if it is a primitive type
@@ -245,7 +248,10 @@ def:see_also_tags(also) ?><?cs
       <p><b>See also:</b></p>
       <ul class="nolist"><?cs
         each:tag=also ?><li><?cs
-            if:tag.kind == "@see" ?><code><a href="<?cs var:toroot ?><?cs var:tag.href ?>"><?cs
+            if:tag.kind == "@see" ?><code><a href="<?cs
+                    if:!tag.federatedSite ?><?cs
+                      var:toroot ?><?cs
+                    /if ?><?cs var:tag.href ?>"><?cs
                     var:tag.label ?></a></code><?cs
             elif:tag.kind == "@seeHref" ?><a href="<?cs var:tag.href ?>"><?cs var:tag.label ?></a><?cs
             elif:tag.kind == "@seeJustLabel" ?><?cs var:tag.label ?><?cs
@@ -310,7 +316,10 @@ def:description(obj) ?><?cs
       <p><b>Related XML Attributes:</b></p>
       <ul class="nolist"><?cs
         each:attr=obj.attrRefs ?>
-            <li><a href="<?cs var:toroot ?><?cs var:attr.href ?>"><?cs var:attr.name ?></a></li><?cs
+            <li><a href="<?cs
+                    if:!attr.federatedSite ?><?cs
+                      var:toroot ?><?cs
+                    /if ?><?cs var:attr.href ?>"><?cs var:attr.name ?></a></li><?cs
         /each ?>
       </ul><?cs
   /if ?><?cs
