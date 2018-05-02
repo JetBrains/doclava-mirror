@@ -184,6 +184,7 @@ public class Doclava {
     boolean offlineMode = false;
     String apiFile = null;
     String removedApiFile = null;
+    String removedDexApiFile = null;
     String exactApiFile = null;
     String privateApiFile = null;
     String privateDexApiFile = null;
@@ -305,6 +306,8 @@ public class Doclava {
         apiFile = a[1];
       } else if (a[0].equals("-removedApi")) {
         removedApiFile = a[1];
+      } else if (a[0].equals("-removedDexApi")) {
+        removedDexApiFile = a[1];
       } else if (a[0].equals("-exactApi")) {
         exactApiFile = a[1];
       } else if (a[0].equals("-privateApi")) {
@@ -556,9 +559,11 @@ public class Doclava {
 
     // Stubs
     if (stubsDir != null || apiFile != null || proguardFile != null || removedApiFile != null
-        || exactApiFile != null || privateApiFile != null || privateDexApiFile != null) {
-      Stubs.writeStubsAndApi(stubsDir, apiFile, proguardFile, removedApiFile, exactApiFile,
-          privateApiFile, privateDexApiFile, stubPackages, stubImportPackages, stubSourceOnly);
+        || removedDexApiFile != null || exactApiFile != null || privateApiFile != null
+        || privateDexApiFile != null) {
+      Stubs.writeStubsAndApi(stubsDir, apiFile, proguardFile, removedApiFile, removedDexApiFile,
+          exactApiFile, privateApiFile, privateDexApiFile, stubPackages, stubImportPackages,
+          stubSourceOnly);
     }
 
     Errors.printErrors();
@@ -854,6 +859,9 @@ public class Doclava {
       return 2;
     }
     if (option.equals("-removedApi")) {
+      return 2;
+    }
+    if (option.equals("-removedDexApi")) {
       return 2;
     }
     if (option.equals("-exactApi")) {
