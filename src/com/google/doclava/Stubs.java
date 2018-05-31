@@ -46,15 +46,16 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Stubs {
-  public static void writeStubsAndApi(String stubsDir, String apiFile, String keepListFile,
-      String removedApiFile, String removedDexApiFile, String exactApiFile, String privateApiFile,
-      String privateDexApiFile, HashSet<String> stubPackages, HashSet<String> stubImportPackages,
-      boolean stubSourceOnly) {
+  public static void writeStubsAndApi(String stubsDir, String apiFile, String dexApiFile,
+      String keepListFile, String removedApiFile, String removedDexApiFile, String exactApiFile,
+      String privateApiFile, String privateDexApiFile, HashSet<String> stubPackages,
+      HashSet<String> stubImportPackages, boolean stubSourceOnly) {
     // figure out which classes we need
     final HashSet<ClassInfo> notStrippable = new HashSet<ClassInfo>();
     Collection<ClassInfo> all = Converter.allClasses();
     Map<PackageInfo, List<ClassInfo>> allClassesByPackage = null;
     PrintStream apiWriter = null;
+    PrintStream dexApiWriter = null;
     PrintStream keepListWriter = null;
     PrintStream removedApiWriter = null;
     PrintStream removedDexApiWriter = null;
@@ -69,6 +70,16 @@ public class Stubs {
         apiWriter = new PrintStream(new BufferedOutputStream(new FileOutputStream(xml)));
       } catch (FileNotFoundException e) {
         Errors.error(Errors.IO_ERROR, new SourcePositionInfo(apiFile, 0, 0),
+            "Cannot open file for write.");
+      }
+    }
+    if (dexApiFile != null) {
+      try {
+        File dexApi = new File(dexApiFile);
+        dexApi.getParentFile().mkdirs();
+        dexApiWriter = new PrintStream(new BufferedOutputStream(new FileOutputStream(dexApi)));
+      } catch (FileNotFoundException e) {
+        Errors.error(Errors.IO_ERROR, new SourcePositionInfo(dexApiFile, 0, 0),
             "Cannot open file for write.");
       }
     }
@@ -239,7 +250,7 @@ public class Stubs {
             writeClassFile(stubsDir, notStrippable, cl);
           }
           // build class list for api file or keep list file
-          if (apiWriter != null || keepListWriter != null) {
+          if (apiWriter != null || dexApiWriter != null || keepListWriter != null) {
             if (packages.containsKey(cl.containingPackage())) {
               packages.get(cl.containingPackage()).add(cl);
             } else {
@@ -268,6 +279,7 @@ public class Stubs {
     FilterPredicate apiFilter = new FilterPredicate(new ApiPredicate().setIgnoreShown(ignoreShown));
     ApiPredicate apiReference = new ApiPredicate().setIgnoreShown(true);
     Predicate<MemberInfo> apiEmit = apiFilter.and(new ElidingPredicate(apiReference));
+    Predicate<MemberInfo> dexApiEmit = memberIsNotCloned.and(apiFilter);
 
     Predicate<MemberInfo> privateEmit = memberIsNotCloned.and(apiFilter.negate());
     Predicate<MemberInfo> privateReference = (x -> true);
@@ -282,6 +294,12 @@ public class Stubs {
     if (apiWriter != null) {
       writeApi(apiWriter, packages, apiEmit, apiReference);
       apiWriter.close();
+    }
+
+    // Write out the current DEX API
+    if (dexApiWriter != null) {
+      writeDexApi(dexApiWriter, packages, dexApiEmit);
+      dexApiWriter.close();
     }
 
     // Write out the keep list
