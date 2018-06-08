@@ -182,6 +182,7 @@ public class Doclava {
     // Create the dependency graph for the stubs  directory
     boolean offlineMode = false;
     String apiFile = null;
+    String dexApiFile = null;
     String removedApiFile = null;
     String removedDexApiFile = null;
     String exactApiFile = null;
@@ -303,6 +304,8 @@ public class Doclava {
         sdkValuePath = a[1];
       } else if (a[0].equals("-api")) {
         apiFile = a[1];
+      } else if (a[0].equals("-dexApi")) {
+        dexApiFile = a[1];
       } else if (a[0].equals("-removedApi")) {
         removedApiFile = a[1];
       } else if (a[0].equals("-removedDexApi")) {
@@ -549,12 +552,12 @@ public class Doclava {
     }
 
     // Stubs
-    if (stubsDir != null || apiFile != null || proguardFile != null || removedApiFile != null
-        || removedDexApiFile != null || exactApiFile != null || privateApiFile != null
-        || privateDexApiFile != null) {
-      Stubs.writeStubsAndApi(stubsDir, apiFile, proguardFile, removedApiFile, removedDexApiFile,
-          exactApiFile, privateApiFile, privateDexApiFile, stubPackages, stubImportPackages,
-          stubSourceOnly);
+    if (stubsDir != null || apiFile != null || dexApiFile != null || proguardFile != null
+        || removedApiFile != null || removedDexApiFile != null || exactApiFile != null
+        || privateApiFile != null || privateDexApiFile != null) {
+      Stubs.writeStubsAndApi(stubsDir, apiFile, dexApiFile, proguardFile, removedApiFile,
+          removedDexApiFile, exactApiFile, privateApiFile, privateDexApiFile, stubPackages,
+          stubImportPackages, stubSourceOnly);
     }
 
     Errors.printErrors();
@@ -841,6 +844,9 @@ public class Doclava {
       return 2;
     }
     if (option.equals("-api")) {
+      return 2;
+    }
+    if (option.equals("-dexApi")) {
       return 2;
     }
     if (option.equals("-removedApi")) {
