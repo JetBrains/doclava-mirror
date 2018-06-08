@@ -722,6 +722,7 @@ public class Stubs {
     int N = enumConstants.size();
     int i = 0;
     for (FieldInfo field : enumConstants) {
+      writeAnnotations(stream, field.annotations(), field.isDeprecated());
       if (!field.constantLiteralValue().equals("null")) {
         stream.println(field.name() + "(" + field.constantLiteralValue()
             + (i == N - 1 ? ");" : "),"));
@@ -973,7 +974,7 @@ public class Stubs {
       if (canCallMethod(cl, m)) {
         if (m.thrownExceptions() != null) {
           for (ClassInfo thrown : m.thrownExceptions()) {
-            if (!exceptionNames.contains(thrown.name())) {
+            if (thrownExceptions != null && !exceptionNames.contains(thrown.name())) {
               badException = true;
             }
           }
@@ -1069,6 +1070,14 @@ public class Stubs {
       stream.print(def.valueString());
     }
     stream.println(";");
+  }
+
+  public static void writeXml(PrintStream xmlWriter, Collection<PackageInfo> pkgs, boolean strip) {
+    if (strip) {
+      Stubs.writeXml(xmlWriter, pkgs);
+    } else {
+      Stubs.writeXml(xmlWriter, pkgs, c -> true);
+    }
   }
 
   public static void writeXml(PrintStream xmlWriter, Collection<PackageInfo> pkgs,
@@ -1618,11 +1627,10 @@ public class Stubs {
       if (a.type().qualifiedNameMatches("android", "annotation.RequiresPermission")) {
         hasAnnotation = true;
         for (AnnotationValueInfo val : a.elementValues()) {
-          ArrayList<AnnotationValueInfo> values = null;
+          ArrayList<AnnotationValueInfo> values = new ArrayList<>();
           boolean any = false;
           switch (val.element().name()) {
             case "value":
-              values = new ArrayList<AnnotationValueInfo>();
               values.add(val);
               break;
             case "allOf":
@@ -1633,6 +1641,7 @@ public class Stubs {
               values = (ArrayList<AnnotationValueInfo>) val.value();
               break;
           }
+          if (values.isEmpty()) continue;
 
           ArrayList<String> system = new ArrayList<>();
           ArrayList<String> nonSystem = new ArrayList<>();

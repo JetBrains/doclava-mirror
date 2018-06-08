@@ -909,8 +909,6 @@ public class MethodInfo extends MemberInfo implements AbstractMethodInfo, Resolv
           + " to " + mInfo.scope());
     }
 
-    // Changing the deprecated annotation is binary- and source-compatible, but
-    // we still need to log the API change.
     if (!isDeprecated() == mInfo.isDeprecated()) {
       Errors.error(Errors.CHANGED_DEPRECATED, mInfo.position(), "Method "
           + mInfo.prettyQualifiedSignature() + " has changed deprecation state " + isDeprecated()
@@ -918,14 +916,16 @@ public class MethodInfo extends MemberInfo implements AbstractMethodInfo, Resolv
       consistent = false;
     }
 
-    // Changing the synchronized modifier is binary- and source-compatible (see
-    // JLS 3 13.4.20), but we still need to log the API change.
+    // see JLS 3 13.4.20 "Adding or deleting a synchronized modifier of a method does not break "
+    // "compatibility with existing binaries."
+    /*
     if (mIsSynchronized != mInfo.mIsSynchronized) {
       Errors.error(Errors.CHANGED_SYNCHRONIZED, mInfo.position(), "Method " + mInfo.qualifiedName()
           + " has changed 'synchronized' qualifier from " + mIsSynchronized + " to "
           + mInfo.mIsSynchronized);
       consistent = false;
     }
+    */
 
     for (ClassInfo exception : thrownExceptions()) {
       if (!mInfo.throwsException(exception)) {
