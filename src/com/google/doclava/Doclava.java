@@ -195,6 +195,7 @@ public class Doclava {
     HashSet<String> stubPackages = null;
     HashSet<String> stubImportPackages = null;
     boolean stubSourceOnly = false;
+    boolean keepStubComments = false;
     ArrayList<String> knownTagsFiles = new ArrayList<String>();
 
     root = r;
@@ -303,6 +304,8 @@ public class Doclava {
         }
       } else if (a[0].equals("-stubsourceonly")) {
         stubSourceOnly = true;
+      } else if (a[0].equals("-keepstubcomments")) {
+        keepStubComments = true;
       } else if (a[0].equals("-sdkvalues")) {
         sdkValuePath = a[1];
       } else if (a[0].equals("-api")) {
@@ -577,7 +580,7 @@ public class Doclava {
         || privateApiFile != null || privateDexApiFile != null || apiMappingFile != null) {
       Stubs.writeStubsAndApi(stubsDir, apiFile, dexApiFile, proguardFile, removedApiFile,
           removedDexApiFile, exactApiFile, privateApiFile, privateDexApiFile, apiMappingFile,
-          stubPackages, stubImportPackages, stubSourceOnly);
+          stubPackages, stubImportPackages, stubSourceOnly, keepStubComments);
     }
 
     Errors.printErrors();
@@ -861,6 +864,9 @@ public class Doclava {
       return 2;
     }
     if (option.equals("-stubsourceonly")) {
+      return 1;
+    }
+    if (option.equals("-keepstubcomments")) {
       return 1;
     }
     if (option.equals("-sdkvalues")) {
