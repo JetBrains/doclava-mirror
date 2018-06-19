@@ -35,8 +35,16 @@ public class SeeTagInfo extends TagInfo {
 
   protected LinkReference linkReference() {
     if (mLink == null) {
+      // If this is a @see reference in frameworks/base, suppress errors about broken references.
+      // Outside of frameworks/base, frameworks/support, and the generated android/R file, all such
+      // errors have been fixed, see b/80570421.
+      boolean suppressableSeeReference =
+          "@see".equals(name()) &&
+              (position().file.contains("frameworks/base/")
+                  || position().file.contains("frameworks/support/")
+                  || position().file.endsWith("android/R.java"));
       mLink =
-          LinkReference.parse(text(), mBase, position(), (!"@see".equals(name()))
+          LinkReference.parse(text(), mBase, position(), !suppressableSeeReference
               && (mBase != null ? mBase.checkLevel() : true));
     }
     return mLink;
