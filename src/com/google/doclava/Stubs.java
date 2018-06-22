@@ -48,8 +48,8 @@ import java.util.stream.Collectors;
 public class Stubs {
   public static void writeStubsAndApi(String stubsDir, String apiFile, String dexApiFile,
       String keepListFile, String removedApiFile, String removedDexApiFile, String exactApiFile,
-      String privateApiFile, String privateDexApiFile, HashSet<String> stubPackages,
-      HashSet<String> stubImportPackages, boolean stubSourceOnly) {
+      String privateApiFile, String privateDexApiFile, String apiMappingFile,
+      HashSet<String> stubPackages, HashSet<String> stubImportPackages, boolean stubSourceOnly) {
     // figure out which classes we need
     final HashSet<ClassInfo> notStrippable = new HashSet<ClassInfo>();
     Collection<ClassInfo> all = Converter.allClasses();
@@ -62,6 +62,7 @@ public class Stubs {
     PrintStream exactApiWriter = null;
     PrintStream privateApiWriter = null;
     PrintStream privateDexApiWriter = null;
+    PrintStream apiMappingWriter = null;
 
     if (apiFile != null) {
       try {
@@ -145,6 +146,17 @@ public class Stubs {
             new BufferedOutputStream(new FileOutputStream(privateDexApi)));
       } catch (FileNotFoundException e) {
         Errors.error(Errors.IO_ERROR, new SourcePositionInfo(privateDexApiFile, 0, 0),
+            "Cannot open file for write");
+      }
+    }
+    if (apiMappingFile != null) {
+      try {
+        File apiMapping = new File(apiMappingFile);
+        apiMapping.getParentFile().mkdirs();
+        apiMappingWriter = new PrintStream(
+            new BufferedOutputStream(new FileOutputStream(apiMapping)));
+      } catch (FileNotFoundException e) {
+        Errors.error(Errors.IO_ERROR, new SourcePositionInfo(apiMappingFile, 0, 0),
             "Cannot open file for write");
       }
     }
@@ -264,7 +276,7 @@ public class Stubs {
     }
 
     if (privateApiWriter != null || privateDexApiWriter != null || removedApiWriter != null
-            || removedDexApiWriter != null) {
+            || removedDexApiWriter != null || apiMappingWriter != null) {
       allClassesByPackage = Converter.allClasses().stream()
           // Make sure that the files only contains information from the required packages.
           .filter(ci -> stubPackages == null
@@ -318,6 +330,12 @@ public class Stubs {
     if (privateDexApiWriter != null) {
       writeDexApi(privateDexApiWriter, allClassesByPackage, privateEmit);
       privateDexApiWriter.close();
+    }
+
+    // Write out the API mapping
+    if (apiMappingWriter != null) {
+      writeApiMapping(apiMappingWriter, allClassesByPackage);
+      apiMappingWriter.close();
     }
 
     // Write out the removed API
@@ -1459,6 +1477,34 @@ public class Stubs {
     }
   }
 
+  static void writeApiMapping(PrintStream mappingWriter,
+      Map<PackageInfo, List<ClassInfo>> classesByPackage) {
+
+    for (PackageInfo pkg : classesByPackage.keySet().stream().sorted(PackageInfo.comparator)
+            .collect(Collectors.toList())) {
+      if (pkg.name().equals(PackageInfo.DEFAULT_PACKAGE)) continue;
+      for (ClassInfo cl : classesByPackage.get(pkg).stream().sorted(ClassInfo.comparator)
+              .collect(Collectors.toList())) {
+        cl.getExhaustiveConstructors().stream().sorted(MethodInfo.comparator).forEach(method -> {
+          writeMethodDexApi(mappingWriter, cl, method);
+          writeSourcePositionInfo(mappingWriter, method);
+        });
+        cl.getExhaustiveMethods().stream().sorted(MethodInfo.comparator).forEach(method -> {
+          writeMethodDexApi(mappingWriter, cl, method);
+          writeSourcePositionInfo(mappingWriter, method);
+        });
+        cl.getExhaustiveEnumConstants().stream().sorted(FieldInfo.comparator).forEach(enumInfo -> {
+          writeFieldDexApi(mappingWriter, cl, enumInfo);
+          writeSourcePositionInfo(mappingWriter, enumInfo);
+        });
+        cl.getExhaustiveFields().stream().sorted(FieldInfo.comparator).forEach(field -> {
+          writeFieldDexApi(mappingWriter, cl, field);
+          writeSourcePositionInfo(mappingWriter, field);
+        });
+      }
+    }
+  }
+
   /**
    * Write the removed members of the class to removed.txt
    */
@@ -1763,6 +1809,11 @@ public class Stubs {
     writeThrowsApi(apiWriter, mi.thrownExceptions());
 
     apiWriter.print(";\n");
+  }
+
+  static void writeSourcePositionInfo(PrintStream writer, DocInfo docInfo) {
+    SourcePositionInfo pos = docInfo.position();
+    writer.println(pos);
   }
 
   static void writeMethodDexApi(PrintStream apiWriter, ClassInfo cl, MethodInfo mi) {
