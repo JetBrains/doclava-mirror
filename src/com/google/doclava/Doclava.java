@@ -189,6 +189,7 @@ public class Doclava {
     String privateApiFile = null;
     String privateDexApiFile = null;
     String debugStubsFile = "";
+    String apiMappingFile = null;
     HashSet<String> stubPackages = null;
     HashSet<String> stubImportPackages = null;
     boolean stubSourceOnly = false;
@@ -316,6 +317,8 @@ public class Doclava {
         privateApiFile = a[1];
       } else if (a[0].equals("-privateDexApi")) {
         privateDexApiFile = a[1];
+      } else if (a[0].equals("-apiMapping")) {
+        apiMappingFile = a[1];
       } else if (a[0].equals("-nodocs")) {
         generateDocs = false;
       } else if (a[0].equals("-noassets")) {
@@ -554,10 +557,10 @@ public class Doclava {
     // Stubs
     if (stubsDir != null || apiFile != null || dexApiFile != null || proguardFile != null
         || removedApiFile != null || removedDexApiFile != null || exactApiFile != null
-        || privateApiFile != null || privateDexApiFile != null) {
+        || privateApiFile != null || privateDexApiFile != null || apiMappingFile != null) {
       Stubs.writeStubsAndApi(stubsDir, apiFile, dexApiFile, proguardFile, removedApiFile,
-          removedDexApiFile, exactApiFile, privateApiFile, privateDexApiFile, stubPackages,
-          stubImportPackages, stubSourceOnly);
+          removedDexApiFile, exactApiFile, privateApiFile, privateDexApiFile, apiMappingFile,
+          stubPackages, stubImportPackages, stubSourceOnly);
     }
 
     Errors.printErrors();
@@ -862,6 +865,9 @@ public class Doclava {
       return 2;
     }
     if (option.equals("-privateDexApi")) {
+      return 2;
+    }
+    if (option.equals("-apiMapping")) {
       return 2;
     }
     if (option.equals("-nodocs")) {
