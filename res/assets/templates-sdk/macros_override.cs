@@ -58,8 +58,10 @@ def:aux_tag_list(tags) ?><?cs
       elif:tag.kind == "@returnDoc" ?><?cs call:tag_list(tag.commentTags) ?><?cs
       elif:tag.kind == "@range" ?><?cs call:dump_range(tag) ?><?cs
       elif:tag.kind == "@intDef" ?><?cs call:dump_int_def(tag) ?><?cs
+      elif:tag.kind == "@stringDef" ?><?cs call:dump_string_def(tag) ?><?cs
       elif:tag.kind == "@permission" ?><?cs call:dump_permission(tag) ?><?cs
       elif:tag.kind == "@service" ?><?cs call:dump_service(tag) ?><?cs
+      elif:tag.kind == "@feature" ?><?cs call:dump_feature(tag) ?><?cs
       /if ?><?cs
   /each ?></p><?cs
 /def ?><?cs
@@ -80,6 +82,18 @@ def:dump_int_def(tag) ?><?cs
     /if ?><?cs
   else ?>Value is <?cs
   /if ?><?cs
+  loop:i = #0, subcount(tag.values), #1 ?><?cs
+    with:val = tag.values[i] ?><?cs
+      call:tag_list(val.commentTags) ?><?cs
+      if i == subcount(tag.values) - 2 ?> or <?cs
+      elif:i < subcount(tag.values) - 2 ?>, <?cs
+      /if ?><?cs
+    /with ?><?cs
+  /loop ?>.<?cs
+/def ?><?cs
+
+# Print output for @stringDef tags ?><?cs
+def:dump_string_def(tag) ?>Value is <?cs
   loop:i = #0, subcount(tag.values), #1 ?><?cs
     with:val = tag.values[i] ?><?cs
       call:tag_list(val.commentTags) ?><?cs
@@ -116,4 +130,10 @@ def:dump_service(tag) ?>Instances of this class must be obtained using <?cs
     if i < subcount(tag.values) - 2 ?> or <?cs
     /if ?><?cs
   /loop ?>.<?cs
+/def ?><?cs
+
+# Print output for @feature tags ?><?cs
+def:dump_feature(tag) ?>Requires the <?cs
+  call:tag_list(tag.values[0].commentTags) ?> feature which can be detected using <?cs
+  call:tag_list(tag.values[1].commentTags) ?>.<?cs
 /def ?>

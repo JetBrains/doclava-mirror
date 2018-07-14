@@ -23,10 +23,11 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class AndroidAuxSource implements AuxSource {
-  private static final int TYPE_FIELD = 0;
-  private static final int TYPE_METHOD = 1;
-  private static final int TYPE_PARAM = 2;
-  private static final int TYPE_RETURN = 3;
+  private static final int TYPE_CLASS = 0;
+  private static final int TYPE_FIELD = 1;
+  private static final int TYPE_METHOD = 2;
+  private static final int TYPE_PARAM = 3;
+  private static final int TYPE_RETURN = 4;
 
   @Override
   public TagInfo[] classAuxTags(ClassInfo clazz) {
@@ -72,6 +73,7 @@ public class AndroidAuxSource implements AuxSource {
             valueTags.toArray(TagInfo.getArray(valueTags.size()))));
       }
     }
+    auxTags(TYPE_CLASS, clazz.annotations(), toString(clazz.inlineTags()), tags);
     return tags.toArray(TagInfo.getArray(tags.size()));
   }
 
@@ -103,6 +105,12 @@ public class AndroidAuxSource implements AuxSource {
   private static TagInfo[] auxTags(int type, List<AnnotationInstanceInfo> annotations,
       String[] comment) {
     ArrayList<TagInfo> tags = new ArrayList<>();
+    auxTags(type, annotations, comment, tags);
+    return tags.toArray(TagInfo.getArray(tags.size()));
+  }
+
+  private static void auxTags(int type, List<AnnotationInstanceInfo> annotations,
+      String[] comment, ArrayList<TagInfo> tags) {
     for (AnnotationInstanceInfo annotation : annotations) {
       // Ignore null-related annotations when docs already mention
       if (annotation.type().qualifiedNameMatches("android", "annotation.NonNull")
@@ -121,6 +129,7 @@ public class AndroidAuxSource implements AuxSource {
       switch (type) {
         case TYPE_METHOD:
         case TYPE_FIELD:
+        case TYPE_CLASS:
           docTags = annotation.type().comment().memberDocTags();
           break;
         case TYPE_PARAM:
@@ -135,7 +144,7 @@ public class AndroidAuxSource implements AuxSource {
       }
 
       // Document required permissions
-      if ((type == TYPE_METHOD || type == TYPE_FIELD)
+      if ((type == TYPE_CLASS || type == TYPE_METHOD || type == TYPE_FIELD)
           && annotation.type().qualifiedNameMatches("android", "annotation.RequiresPermission")) {
         ArrayList<AnnotationValueInfo> values = null;
         boolean any = false;
@@ -176,6 +185,41 @@ public class AndroidAuxSource implements AuxSource {
             valueTags.toArray(TagInfo.getArray(valueTags.size()))));
       }
 
+      // Document required features
+      if ((type == TYPE_CLASS || type == TYPE_METHOD || type == TYPE_FIELD)
+          && annotation.type().qualifiedNameMatches("android", "annotation.RequiresFeature")) {
+        AnnotationValueInfo value = null;
+        for (AnnotationValueInfo val : annotation.elementValues()) {
+          switch (val.element().name()) {
+            case "value":
+              value = val;
+              break;
+          }
+        }
+        if (value == null) continue;
+
+        ClassInfo pmClass = annotation.type().findClass("android.content.pm.PackageManager");
+        ArrayList<TagInfo> valueTags = new ArrayList<>();
+        final String expected = String.valueOf(value.value());
+        for (FieldInfo field : pmClass.fields()) {
+          if (field.isHiddenOrRemoved()) continue;
+          if (String.valueOf(field.constantValue()).equals(expected)) {
+            valueTags.add(new ParsedTagInfo("", "",
+                "{@link " + pmClass.qualifiedName() + "#" + field.name() + "}", null,
+                SourcePositionInfo.UNKNOWN));
+          }
+        }
+
+        valueTags.add(new ParsedTagInfo("", "",
+            "{@link android.content.pm.PackageManager#hasSystemFeature(String)"
+                + " PackageManager.hasSystemFeature(String)}",
+            null, SourcePositionInfo.UNKNOWN));
+
+        Map<String, String> args = new HashMap<>();
+        tags.add(new AuxTagInfo("@feature", "@feature", SourcePositionInfo.UNKNOWN, args,
+            valueTags.toArray(TagInfo.getArray(valueTags.size()))));
+      }
+
       // The remaining annotations below always appear on return docs, and
       // should not be included in the method body
       if (type == TYPE_METHOD) continue;
@@ -202,21 +246,28 @@ public class AndroidAuxSource implements AuxSource {
 
       // Document integer values
       for (AnnotationInstanceInfo inner : annotation.type().annotations()) {
-        if (inner.type().qualifiedNameMatches("android", "annotation.IntDef")) {
+        boolean intDef = inner.type().qualifiedNameMatches("android", "annotation.IntDef");
+        boolean stringDef = inner.type().qualifiedNameMatches("android", "annotation.StringDef");
+        if (intDef || stringDef) {
           ArrayList<AnnotationValueInfo> prefixes = null;
+          ArrayList<AnnotationValueInfo> suffixes = null;
           ArrayList<AnnotationValueInfo> values = null;
+          final String kind = intDef ? "@intDef" : "@stringDef";
           boolean flag = false;
 
           for (AnnotationValueInfo val : inner.elementValues()) {
             switch (val.element().name()) {
               case "prefix": prefixes = (ArrayList<AnnotationValueInfo>) val.value(); break;
+              case "suffix": suffixes = (ArrayList<AnnotationValueInfo>) val.value(); break;
               case "value": values = (ArrayList<AnnotationValueInfo>) val.value(); break;
               case "flag": flag = Boolean.parseBoolean(String.valueOf(val.value())); break;
             }
           }
 
-          // Sadly we can only generate docs when told about a prefix
-          if (prefixes == null || prefixes.isEmpty()) continue;
+          // Sadly we can only generate docs when told about a prefix/suffix
+          if (prefixes == null) prefixes = new ArrayList<>();
+          if (suffixes == null) suffixes = new ArrayList<>();
+          if (prefixes.isEmpty() && suffixes.isEmpty()) continue;
 
           final ClassInfo clazz = annotation.type().containingClass();
           final HashMap<String, FieldInfo> candidates = new HashMap<>();
@@ -224,6 +275,11 @@ public class AndroidAuxSource implements AuxSource {
             if (field.isHiddenOrRemoved()) continue;
             for (AnnotationValueInfo prefix : prefixes) {
               if (field.name().startsWith(String.valueOf(prefix.value()))) {
+                candidates.put(String.valueOf(field.constantValue()), field);
+              }
+            }
+            for (AnnotationValueInfo suffix : suffixes) {
+              if (field.name().endsWith(String.valueOf(suffix.value()))) {
                 candidates.put(String.valueOf(field.constantValue()), field);
               }
             }
@@ -243,13 +299,12 @@ public class AndroidAuxSource implements AuxSource {
           if (!valueTags.isEmpty()) {
             Map<String, String> args = new HashMap<>();
             if (flag) args.put("flag", "true");
-            tags.add(new AuxTagInfo("@intDef", "@intDef", SourcePositionInfo.UNKNOWN, args,
+            tags.add(new AuxTagInfo(kind, kind, SourcePositionInfo.UNKNOWN, args,
                 valueTags.toArray(TagInfo.getArray(valueTags.size()))));
           }
         }
       }
     }
-    return tags.toArray(TagInfo.getArray(tags.size()));
   }
 
   private static String[] toString(TagInfo[] tags) {
