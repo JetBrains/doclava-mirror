@@ -8,7 +8,10 @@ if:dac ?><?cs
 
 <?cs # A link to a package ?><?cs
 def:package_link(pkg) ?>
-  <a href="<?cs var:toroot ?><?cs var:pkg.link ?>"><?cs var:pkg.name ?></a><?cs
+  <a href="<?cs
+          if:!pkg.federatedSite ?><?cs
+            var:toroot ?><?cs
+          /if ?><?cs var:pkg.link ?>"><?cs var:pkg.name ?></a><?cs
   /def ?><?cs
 
 # A link to a type, or not if it is a primitive type
@@ -245,7 +248,10 @@ def:see_also_tags(also) ?><?cs
       <p><b>See also:</b></p>
       <ul class="nolist"><?cs
         each:tag=also ?><li><?cs
-            if:tag.kind == "@see" ?><code><a href="<?cs var:toroot ?><?cs var:tag.href ?>"><?cs
+            if:tag.kind == "@see" ?><code><a href="<?cs
+                    if:!tag.federatedSite ?><?cs
+                      var:toroot ?><?cs
+                    /if ?><?cs var:tag.href ?>"><?cs
                     var:tag.label ?></a></code><?cs
             elif:tag.kind == "@seeHref" ?><a href="<?cs var:tag.href ?>"><?cs var:tag.label ?></a><?cs
             elif:tag.kind == "@seeJustLabel" ?><?cs var:tag.label ?><?cs
@@ -304,13 +310,16 @@ def:description(obj) ?><?cs
   call:aux_tag_list(obj.descrAux) ?><?cs
   if:subcount(obj.annotationdocumentation)?><?cs
     each:annodoc=obj.annotationdocumentation ?>
-    <div style="display:block"><?cs var:annodoc.text?></div><?cs
+    <div><?cs var:annodoc.text?></div><?cs
     /each?><?cs /if?><?cs
   if:subcount(obj.attrRefs) ?>
       <p><b>Related XML Attributes:</b></p>
       <ul class="nolist"><?cs
         each:attr=obj.attrRefs ?>
-            <li><a href="<?cs var:toroot ?><?cs var:attr.href ?>"><?cs var:attr.name ?></a></li><?cs
+            <li><a href="<?cs
+                    if:!attr.federatedSite ?><?cs
+                      var:toroot ?><?cs
+                    /if ?><?cs var:attr.href ?>"><?cs var:attr.name ?></a></li><?cs
         /each ?>
       </ul><?cs
   /if ?><?cs
@@ -384,7 +393,13 @@ def:class_link_table(classes) ?><?cs
   set:count = #1 ?>
   <table class="jd-sumtable-expando"><?cs
       each:cl=classes ?>
-        <tr class="<?cs if:count % #2 ?>alt-color<?cs /if ?> api apilevel-<?cs var:cl.type.since ?>" >
+        <tr <?cs
+            if:cl.type.since
+              ?>data-version-added="<?cs var:cl.type.since ?>"<?cs
+            /if ?><?cs
+            if:cl.type.deprecatedsince
+              ?> data-version-deprecated="<?cs var:cl.type.deprecatedsince ?>"<?cs
+            /if ?> >
               <td><?cs call:type_link(cl.type) ?></td>
               <td width="100%"><?cs call:short_descr(cl) ?>&nbsp;</td>
           </tr><?cs set:count = count + #1 ?><?cs
@@ -395,10 +410,10 @@ def:class_link_table(classes) ?><?cs
 # A list of links to classes, for use in the side navigation of classes when viewing a package (panel nav) ?><?cs
 def:class_link_list(label, classes) ?><?cs
   if:subcount(classes) ?>
-    <li><h2><?cs var:label ?></h2>
+    <li><h2 class="hide-from-toc"><?cs var:label ?></h2>
       <ul><?cs
       each:cl=classes ?>
-        <li class="api apilevel-<?cs var:cl.type.since ?>"><?cs call:type_link2(cl.type,"true") ?></li><?cs
+        <li><?cs call:type_link2(cl.type,"true") ?></li><?cs
       /each ?>
       </ul>
     </li><?cs
@@ -408,10 +423,10 @@ def:class_link_list(label, classes) ?><?cs
 # A list of links to classes, for use in the side navigation of classes when viewing a class (panel nav) ?><?cs
 def:list(label, classes) ?><?cs
   if:subcount(classes) ?>
-    <li><h2><?cs var:label ?></h2>
+    <li><h2 class="hide-from-toc"><?cs var:label ?></h2>
       <ul><?cs
       each:cl=classes ?>
-          <li class="<?cs if:class.name == cl.label?>selected <?cs /if ?>api apilevel-<?cs var:cl.since ?>"><?cs call:type_link2(cl,"true") ?></li><?cs
+          <li<?cs if:class.name == cl.label?> class="selected"<?cs /if ?>><?cs call:type_link2(cl,"true") ?></li><?cs
       /each ?>
       </ul>
     </li><?cs
@@ -421,7 +436,7 @@ def:list(label, classes) ?><?cs
 # A list of links to packages, for use in the side navigation of packages (panel nav) ?><?cs
 def:package_link_list(packages) ?><?cs
   each:pkg=packages ?>
-    <li class="<?cs if:(class.package.name == pkg.name) || (package.name == pkg.name)?>selected <?cs /if ?>api apilevel-<?cs var:pkg.since ?>"><?cs call:package_link(pkg) ?></li><?cs
+    <li<?cs if:(class.package.name == pkg.name) || (package.name == pkg.name)?> class="selected"<?cs /if ?>><?cs call:package_link(pkg) ?></li><?cs
   /each ?><?cs
 /def ?>
 
@@ -444,40 +459,30 @@ def:expando_trigger(id, default) ?>
 # An expandable list of classes
 ?><?cs
 def:expandable_class_list(id, classes, default) ?>
-  <div id="<?cs var:id ?>">
-    <div id="<?cs var:id ?>-list" class="jd-inheritedlinks"<?cs
-       if:default != "list" ?>
-         style="display: none;"<?cs
-       /if ?> > <?cs
-       if:subcount(classes) <= #20 ?><?cs
-         each:cl=classes ?><?cs
-         call:type_link(cl.type) ?><?cs
-         if:!last(cl)
-           ?>,<?cs
-         /if ?><?cs
-         /each ?><?cs
-       else ?><?cs
-         set:leftovers = subcount(classes) - #15 ?><?cs
-         loop:i = #0, #14, #1 ?><?cs
-           with:cl=classes[i] ?><?cs
-             call:type_link(cl.type) ?>,<?cs
-           /with ?><?cs
-           if:(#i == #14) ?>and
-             <a href="#"<?cs
-             if:enable_javascript ?>
-                onclick="return toggleInherited(document.getElementById('<?cs var:id ?>', null))"<?cs
-             /if ?> >
-             <?cs var:leftovers ?> others.</a><?cs
-           /if ?><?cs
-         /loop ?><?cs
-       /if ?>
-    </div>
-    <div id="<?cs var:id ?>-summary"<?cs
-      if:default != "summary" ?>
-         style="display: none;"<?cs
-      /if ?> >
-      <?cs call:class_link_table(classes) ?>
-    </div>
+  <div id="<?cs var:id ?>" class="showalways" > <?cs
+    if:subcount(classes) <= #20 ?><?cs
+      each:cl=classes ?><?cs
+        call:type_link(cl.type) ?><?cs
+        if:!last(cl)
+          ?>, <?cs
+        /if ?><?cs
+      /each ?><?cs
+    else ?><?cs
+      set:leftovers = subcount(classes) - #15 ?><?cs
+      loop:i = #0, #14, #1 ?><?cs
+        with:cl=classes[i] ?><?cs
+          call:type_link(cl.type) ?>, <?cs
+        /with ?><?cs
+        if:(#i == #14) ?> and <?cs var:leftovers ?> others.<?cs
+        /if ?><?cs
+      /loop ?><?cs
+    /if ?>
+  </div>
+  <div id="<?cs var:id ?>-summary"<?cs
+    if:default == "summary" ?>
+       class="showalways"<?cs
+    /if ?> >
+    <?cs call:class_link_table(classes) ?>
   </div><?cs
 /def ?>
 
