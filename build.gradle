@@ -47,7 +47,7 @@ if (System.env.DIST_DIR != null && System.env.OUT_DIR != null) {
  * If prebuilts are available, use them. Else, if this is unbundled build use jcenter().
  * Finally, if none of that is true, attempt to compile against the full source trees.
  */
-File m2repo = file('../../prebuilts/tools/common/m2/repository')
+File m2repo = file('../../prebuilts/androidx/external')
 boolean unbundleBuild = (new File("unbundled-build")).exists()
 
 if (m2repo.exists() || unbundleBuild) {
