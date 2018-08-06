@@ -59,7 +59,7 @@ public abstract class MemberInfo extends DocInfo implements Comparable, Scoped {
 
   public String anchor() {
     if (mSignature != null) {
-      return mName + mSignature.replace(" ", "%20");
+      return mName + mSignature;
     } else {
       return mName;
     }

@@ -13,9 +13,10 @@
 ?><?cs def:write_method_summary(methods, included) ?>
 <?cs set:count = #1 ?>
 <?cs each:method = methods ?>
-  <tr <?cs
-      if:method.since
-        ?>data-version-added="<?cs var:method.since ?>"<?cs
+  <?cs # The apilevel-N class MUST BE LAST in the sequence of class names ?>
+  <tr class="api apilevel-<?cs var:method.since ?>"<?cs
+      if:method.since ?>
+      data-version-added="<?cs var:method.since ?>"<?cs
       /if ?><?cs
       if:method.deprecatedsince
         ?> data-version-deprecated="<?cs var:method.deprecatedsince ?>"<?cs
@@ -50,9 +51,9 @@
 ?><?cs def:write_field_summary(fields, included) ?>
 <?cs set:count = #1 ?>
 <?cs each:field=fields ?>
-  <tr <?cs
-      if:field.since
-        ?>data-version-added="<?cs var:field.since ?>"<?cs
+  <tr class="api apilevel-<?cs var:field.since ?>"<?cs
+      if:field.since ?>
+      data-version-added="<?cs var:field.since ?>"<?cs
       /if ?><?cs
       if:field.deprecatedsince
         ?> data-version-deprecated="<?cs var:field.deprecatedsince ?>"<?cs
@@ -77,9 +78,9 @@
 ?><?cs def:write_constant_summary(fields, included) ?>
 <?cs set:count = #1 ?>
     <?cs each:field=fields ?>
-    <tr <?cs
-        if:field.since
-          ?>data-version-added="<?cs var:field.since ?>"<?cs
+    <tr class="api apilevel-<?cs var:field.since ?>"<?cs
+        if:field.since ?>
+        data-version-added="<?cs var:field.since ?>"<?cs
         /if ?><?cs
         if:field.deprecatedsince
           ?> data-version-deprecated="<?cs var:field.deprecatedsince ?>"<?cs
@@ -100,9 +101,9 @@
 ?><?cs def:write_attr_summary(attrs, included) ?>
 <?cs set:count = #1 ?>
     <?cs each:attr=attrs ?>
-    <tr <?cs
-        if:attr.since
-          ?>data-version-added="<?cs var:attr.since ?>"<?cs
+    <tr class="api apilevel-<?cs var:attr.since ?>"<?cs
+        if:attr.since ?>
+        data-version-added="<?cs var:attr.since ?>"<?cs
         /if ?><?cs
         if:attr.deprecatedsince
           ?> data-version-deprecated="<?cs var:attr.deprecatedsince ?>"<?cs
@@ -123,9 +124,9 @@
 ?><?cs def:write_inners_summary(classes) ?>
 <?cs set:count = #1 ?>
   <?cs each:cl=class.inners ?>
-    <tr <?cs
-        if:cl.since
-          ?>data-version-added="<?cs var:cl.since ?>"<?cs
+    <tr class="api apilevel-<?cs var:cl.since ?>"<?cs
+        if:cl.since ?>
+        data-version-added="<?cs var:cl.since ?>"<?cs
         /if ?><?cs
         if:cl.deprecatedsince
           ?> data-version-deprecated="<?cs var:cl.deprecatedsince ?>"<?cs
@@ -156,14 +157,18 @@
 ?>
 <?cs def:write_field_details(fields) ?>
 <?cs each:field=fields ?>
-<div <?cs
-     if:field.since
-       ?>data-version-added="<?cs var:field.since ?>"<?cs
+<?cs # this next line must be exactly like this to be parsed by eclipse ?>
+<?cs # the A tag in the next line must remain where it is, so that Eclipse can parse the docs ?>
+<A NAME="<?cs var:field.anchor ?>"></A>
+<?cs # The apilevel-N class MUST BE LAST in the sequence of class names ?>
+<div class="api apilevel-<?cs var:field.since ?>"<?cs
+     if:field.since ?>
+     data-version-added="<?cs var:field.since ?>"<?cs
      /if ?><?cs
      if:field.deprecatedsince
        ?> data-version-deprecated="<?cs var:field.deprecatedsince ?>"<?cs
      /if ?> >
-    <h3 class="api-name" id="<?cs var:field.anchor ?>"><?cs var:field.name ?></h3>
+    <h3 class="api-name"><?cs var:field.name ?></h3>
     <div class="api-level">
       <?cs call:since_tags(field) ?>
       <?cs call:federated_refs(field) ?>
@@ -191,14 +196,17 @@
 
 <?cs def:write_method_details(methods) ?>
 <?cs each:method=methods ?>
-<div <?cs
-     if:method.since
-       ?>data-version-added="<?cs var:method.since ?>"<?cs
+<?cs # the A tag in the next line must remain where it is, so that Eclipse can parse the docs ?>
+<A NAME="<?cs var:method.anchor ?>"></A>
+<?cs # The apilevel-N class MUST BE LAST in the sequence of class names ?>
+<div class="api apilevel-<?cs var:method.since ?>"<?cs
+     if:method.since ?>
+     data-version-added="<?cs var:method.since ?>"<?cs
      /if ?><?cs
      if:method.deprecatedsince
        ?> data-version-deprecated="<?cs var:method.deprecatedsince ?>"<?cs
      /if ?>>
-    <h3 class="api-name" id="<?cs var:method.anchor ?>"><?cs var:method.name ?></h3>
+    <h3 class="api-name"><?cs var:method.name ?></h3>
     <div class="api-level">
       <div><?cs call:since_tags(method) ?></div>
       <?cs call:federated_refs(method) ?>
@@ -218,7 +226,9 @@
 
 <?cs def:write_attr_details(attrs) ?>
 <?cs each:attr=attrs ?>
-<h3 class="api-name" id="<?cs var:attr.anchor ?>"><?cs var:attr.name ?></h3>
+<?cs # the A tag in the next line must remain where it is, so that Eclipse can parse the docs ?>
+<A NAME="<?cs var:attr.anchor ?>"></A>
+<h3 class="api-name"><?cs var:attr.name ?></h3>
 <?cs call:show_annotations_list(attr) ?>
 <?cs call:description(attr) ?>
 <?cs if:subcount(attr.methods) ?>
@@ -257,9 +267,9 @@
 <?cs # Includes api-info-block DIV at top of page. Standard Devsite uses right nav. ?>
 <?cs if:dac ?><?cs include:"page_info.cs" ?><?cs /if ?>
 <?cs # This DIV spans the entire document to provide scope for some scripts ?>
-<div id="jd-content" <?cs
-     if:class.since
-       ?>data-version-added="<?cs var:class.since ?>"<?cs
+<div class="api apilevel-<?cs var:class.since ?>" id="jd-content"<?cs
+     if:class.since ?>
+     data-version-added="<?cs var:class.since ?>"<?cs
      /if ?><?cs
      if:class.deprecatedsince
        ?> data-version-deprecated="<?cs var:class.deprecatedsince ?>"<?cs
@@ -413,9 +423,9 @@ if:subcount(class.subclasses.direct) && !class.subclasses.hidden ?>
 <tr><th><h3>Inherited XML attributes</h3></th></tr>
 <?cs each:cl=class.inherited ?>
 <?cs if:subcount(cl.attrs) ?>
-<tr <?cs
-    if:cl.since
-      ?>data-version-added="<?cs var:cl.since ?>"<?cs
+<tr class="api apilevel-<?cs var:cl.since ?>"<?cs
+    if:cl.since ?>
+    data-version-added="<?cs var:cl.since ?>"<?cs
     /if ?><?cs
     if:cl.deprecatedsince
       ?> data-version-deprecated="<?cs var:cl.deprecatedsince ?>"<?cs
@@ -442,9 +452,9 @@ if:subcount(class.subclasses.direct) && !class.subclasses.hidden ?>
   <tr><th colspan="2"><h3>Enum values</h3></th></tr>
 <?cs set:count = #1 ?>
   <?cs each:field=class.enumConstants ?>
-  <tr <?cs
-      if:field.since
-        ?>data-version-added="<?cs var:field.since ?>"<?cs
+  <tr class="api apilevel-<?cs var:field.since ?>"<?cs
+      if:field.since ?>
+      data-version-added="<?cs var:field.since ?>"<?cs
       /if ?><?cs
       if:field.deprecatedsince
         ?> data-version-deprecated="<?cs var:field.deprecatedsince ?>"<?cs
@@ -477,9 +487,9 @@ if:subcount(class.subclasses.direct) && !class.subclasses.hidden ?>
 <tr><th><h3>Inherited constants</h3></th></tr>
 <?cs each:cl=class.inherited ?>
 <?cs if:subcount(cl.constants) ?>
-  <tr <?cs
-      if:cl.since
-        ?>data-version-added="<?cs var:cl.since ?>"<?cs
+  <tr class="api apilevel-<?cs var:cl.since ?>"<?cs
+      if:cl.since ?>
+      data-version-added="<?cs var:cl.since ?>"<?cs
       /if ?><?cs
       if:cl.deprecatedsince
         ?> data-version-deprecated="<?cs var:cl.deprecatedsince ?>"<?cs
@@ -516,9 +526,9 @@ if:subcount(class.subclasses.direct) && !class.subclasses.hidden ?>
 <tr><th><h3>Inherited fields</h3></th></tr>
 <?cs each:cl=class.inherited ?>
 <?cs if:subcount(cl.fields) ?>
-  <tr <?cs
-      if:cl.since
-        ?>data-version-added="<?cs var:cl.since ?>"<?cs
+  <tr class="api apilevel-<?cs var:cl.since ?>"<?cs
+      if:cl.since ?>
+      data-version-added="<?cs var:cl.since ?>"<?cs
       /if ?><?cs
       if:cl.deprecatedsince
         ?> data-version-deprecated="<?cs var:cl.deprecatedsince ?>"<?cs
@@ -582,9 +592,9 @@ if:subcount(class.subclasses.direct) && !class.subclasses.hidden ?>
 <tr><th><h3>Inherited methods</h3></th></tr>
 <?cs each:cl=class.inherited ?>
 <?cs if:subcount(cl.methods) ?>
-<tr <?cs
-    if:cl.since
-      ?>data-version-added="<?cs var:cl.since ?>"<?cs
+<tr class="api apilevel-<?cs var:cl.since ?>"<?cs
+    if:cl.since ?>
+    data-version-added="<?cs var:cl.since ?>"<?cs
     /if ?><?cs
     if:cl.deprecatedsince
       ?> data-version-deprecated="<?cs var:cl.deprecatedsince ?>"<?cs
@@ -684,6 +694,31 @@ if:subcount(class.subclasses.direct) && !class.subclasses.hidden ?>
 <!-- ========= END OF CLASS DATA ========= -->
 
 </div><!-- end jd-content -->
+
+<?cs if:devsite ?>
+
+<div class="data-reference-resources-wrapper">
+  <?cs if:subcount(class.package) ?>
+  <ul data-reference-resources>
+    <?cs call:list("Annotations", class.package.annotations) ?>
+    <?cs call:list("Interfaces", class.package.interfaces) ?>
+    <?cs call:list("Classes", class.package.classes) ?>
+    <?cs call:list("Enums", class.package.enums) ?>
+    <?cs call:list("Exceptions", class.package.exceptions) ?>
+    <?cs call:list("Errors", class.package.errors) ?>
+  </ul>
+  <?cs elif:subcount(package) ?>
+  <ul data-reference-resources>
+    <?cs call:class_link_list("Annotations", package.annotations) ?>
+    <?cs call:class_link_list("Interfaces", package.interfaces) ?>
+    <?cs call:class_link_list("Classes", package.classes) ?>
+    <?cs call:class_link_list("Enums", package.enums) ?>
+    <?cs call:class_link_list("Exceptions", package.exceptions) ?>
+    <?cs call:class_link_list("Errors", package.errors) ?>
+  </ul>
+  <?cs /if ?>
+</div>
+<?cs /if ?>
 
 <?cs if:!devsite ?>
 <?cs include:"footer.cs" ?>
