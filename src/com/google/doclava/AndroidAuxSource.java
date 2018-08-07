@@ -146,12 +146,11 @@ public class AndroidAuxSource implements AuxSource {
       // Document required permissions
       if ((type == TYPE_CLASS || type == TYPE_METHOD || type == TYPE_FIELD)
           && annotation.type().qualifiedNameMatches("android", "annotation.RequiresPermission")) {
-        ArrayList<AnnotationValueInfo> values = null;
+        ArrayList<AnnotationValueInfo> values = new ArrayList<>();
         boolean any = false;
         for (AnnotationValueInfo val : annotation.elementValues()) {
           switch (val.element().name()) {
             case "value":
-              values = new ArrayList<AnnotationValueInfo>();
               values.add(val);
               break;
             case "allOf":
@@ -163,7 +162,7 @@ public class AndroidAuxSource implements AuxSource {
               break;
           }
         }
-        if (values == null || values.isEmpty()) continue;
+        if (values.isEmpty()) continue;
 
         ClassInfo permClass = annotation.type().findClass("android.Manifest.permission");
         ArrayList<TagInfo> valueTags = new ArrayList<>();
