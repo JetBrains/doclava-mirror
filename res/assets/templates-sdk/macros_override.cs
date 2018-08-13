@@ -23,9 +23,9 @@
   <?cs set:count = #1 ?>
   <table class="jd-sumtable-expando">
     <?cs each:cl=classes ?>
-      <tr class="api apilevel-<?cs var:cl.type.since ?>"<?cs
-          if:cl.type.since ?>
-          data-version-added="<?cs var:cl.type.since ?>"<?cs
+      <tr <?cs
+          if:cl.type.since
+            ?>data-version-added="<?cs var:cl.type.since ?>"<?cs
           /if ?><?cs
           if:cl.type.deprecatedsince
             ?> data-version-deprecated="<?cs var:cl.type.deprecatedsince ?>"<?cs
