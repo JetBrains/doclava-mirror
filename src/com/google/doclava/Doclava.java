@@ -174,7 +174,6 @@ public class Doclava {
   }
 
   public static boolean start(RootDoc r) {
-    long startTime = System.nanoTime();
     String keepListFile = null;
     String proguardFile = null;
     String proofreadFile = null;
@@ -584,10 +583,6 @@ public class Doclava {
     }
 
     Errors.printErrors();
-
-    long time = System.nanoTime() - startTime;
-    System.out.println("DroidDoc took " + (time / 1000000000) + " sec. to write docs to "
-        + outputPathBase );
 
     return !Errors.hadError;
   }
