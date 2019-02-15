@@ -45,6 +45,8 @@ public class Comment {
           "@implNote",
           "@implSpec",
           "@usesMathJax",
+          "@deprecatedSince",
+          "@apiSince",
       }));
 
   public Comment(String text, ContainerInfo base, SourcePositionInfo sp) {
