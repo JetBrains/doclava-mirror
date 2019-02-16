@@ -82,6 +82,7 @@ public class Doclava {
   public static boolean NAVTREE_ONLY = false;
   /* Generate reference navtree.js with all inherited members */
   public static boolean AT_LINKS_NAVTREE = false;
+  public static boolean METALAVA_API_SINCE = false;
   public static String outputPathBase = "/";
   public static ArrayList<String> inputPathHtmlDirs = new ArrayList<String>();
   public static ArrayList<String> inputPathHtmlDir2 = new ArrayList<String>();
@@ -331,6 +332,8 @@ public class Doclava {
         includeDefaultAssets = false;
       } else if (a[0].equals("-parsecomments")) {
         parseComments = true;
+      } else if (a[0].equals("-metalavaApiSince")) {
+        METALAVA_API_SINCE = true;
       } else if (a[0].equals("-since")) {
         sinceTagger.addVersion(a[1], a[2]);
       } else if (a[0].equals("-artifact")) {
@@ -528,6 +531,15 @@ public class Doclava {
           refPrefix = "gcm-";
         }
 
+        // Packages Pages
+        writePackages(refPrefix + "packages" + htmlExtension);
+
+        // Classes
+        writeClassLists();
+        writeClasses();
+        writeHierarchy();
+        // writeKeywords();
+
         // Write yaml tree.
         if (yamlNavFile != null) {
           if (yamlV2) {
@@ -541,15 +553,6 @@ public class Doclava {
           // This shouldn't happen; this is the legacy DAC left nav file
           NavTree.writeNavTree(javadocDir, refPrefix);
         }
-
-        // Packages Pages
-        writePackages(refPrefix + "packages" + htmlExtension);
-
-        // Classes
-        writeClassLists();
-        writeClasses();
-        writeHierarchy();
-        // writeKeywords();
 
         // Lists for JavaScript
         writeLists();
@@ -903,6 +906,9 @@ public class Doclava {
     if (option.equals("-parsecomments")) {
       return 1;
     }
+    if (option.equals("-metalavaApiSince")) {
+      return 1;
+    }
     if (option.equals("-since")) {
       return 3;
     }
@@ -1054,7 +1060,11 @@ public class Doclava {
           data.setValue("reference.gcm", "true");
       }
       data.setValue("reference", "1");
-      data.setValue("reference.apilevels", sinceTagger.hasVersions() ? "1" : "0");
+      if (METALAVA_API_SINCE) {
+        data.setValue("reference.apilevels", (pkg.getSince() != null) ? "1" : "0");
+      } else {
+        data.setValue("reference.apilevels", sinceTagger.hasVersions() ? "1" : "0");
+      }
       data.setValue("reference.artifacts", artifactTagger.hasArtifacts() ? "1" : "0");
       data.setValue("docs.packages." + i + ".name", s);
       data.setValue("docs.packages." + i + ".link", pkg.htmlPage());
