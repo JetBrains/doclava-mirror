@@ -49,7 +49,8 @@ public class Stubs {
   public static void writeStubsAndApi(String stubsDir, String apiFile, String dexApiFile,
       String keepListFile, String removedApiFile, String removedDexApiFile, String exactApiFile,
       String privateApiFile, String privateDexApiFile, String apiMappingFile,
-      HashSet<String> stubPackages, HashSet<String> stubImportPackages, boolean stubSourceOnly) {
+      HashSet<String> stubPackages, HashSet<String> stubImportPackages, boolean stubSourceOnly,
+      boolean keepStubComments) {
     // figure out which classes we need
     final HashSet<ClassInfo> notStrippable = new HashSet<ClassInfo>();
     Collection<ClassInfo> all = Converter.allClasses();
@@ -259,7 +260,7 @@ public class Stubs {
         if (shouldWriteStub(cl.containingPackage().name(), stubPackages, stubPackageWildcards)) {
           // write out the stubs
           if (stubsDir != null) {
-            writeClassFile(stubsDir, notStrippable, cl);
+            writeClassFile(stubsDir, notStrippable, cl, keepStubComments);
           }
           // build class list for api file or keep list file
           if (apiWriter != null || dexApiWriter != null || keepListWriter != null) {
@@ -588,7 +589,7 @@ public class Stubs {
     return dir + cl.name() + ".java";
   }
 
-  static void writeClassFile(String stubsDir, HashSet<ClassInfo> notStrippable, ClassInfo cl) {
+  static void writeClassFile(String stubsDir, HashSet<ClassInfo> notStrippable, ClassInfo cl, boolean keepStubComments) {
     // inner classes are written by their containing class
     if (cl.containingClass() != null) {
       return;
@@ -608,7 +609,7 @@ public class Stubs {
     PrintStream stream = null;
     try {
       stream = new PrintStream(new BufferedOutputStream(new FileOutputStream(file)));
-      writeClassFile(stream, notStrippable, cl);
+      writeClassFile(stream, notStrippable, cl, keepStubComments);
     } catch (FileNotFoundException e) {
       System.err.println("error writing file: " + filename);
     } finally {
@@ -618,7 +619,7 @@ public class Stubs {
     }
   }
 
-  static void writeClassFile(PrintStream stream, HashSet<ClassInfo> notStrippable, ClassInfo cl) {
+  static void writeClassFile(PrintStream stream, HashSet<ClassInfo> notStrippable, ClassInfo cl, boolean keepStubComments) {
     PackageInfo pkg = cl.containingPackage();
     if (cl.containingClass() == null) {
         stream.print(parseLicenseHeader(cl.position()));
@@ -626,7 +627,7 @@ public class Stubs {
     if (pkg != null) {
       stream.println("package " + pkg.name() + ";");
     }
-    writeClass(stream, notStrippable, cl);
+    writeClass(stream, notStrippable, cl, keepStubComments);
   }
 
   private static String parseLicenseHeader(/* @Nonnull */ SourcePositionInfo positionInfo) {
@@ -677,7 +678,11 @@ public class Stubs {
     return builder.toString();
   }
 
-  static void writeClass(PrintStream stream, HashSet<ClassInfo> notStrippable, ClassInfo cl) {
+  static void writeClass(PrintStream stream, HashSet<ClassInfo> notStrippable, ClassInfo cl, boolean keepStubComments) {
+    if (keepStubComments) {
+      writeComment(stream, cl);
+    }
+
     writeAnnotations(stream, cl.annotations(), cl.isDeprecated());
 
     stream.print(cl.scope() + " ");
@@ -752,14 +757,14 @@ public class Stubs {
 
     for (ClassInfo inner : cl.getRealInnerClasses()) {
       if (notStrippable.contains(inner) && !inner.isDocOnly()) {
-        writeClass(stream, notStrippable, inner);
+        writeClass(stream, notStrippable, inner, keepStubComments);
       }
     }
 
 
     for (MethodInfo method : cl.constructors()) {
       if (!method.isDocOnly()) {
-        writeMethod(stream, method, true);
+        writeMethod(stream, method, true, keepStubComments);
       }
     }
 
@@ -806,7 +811,7 @@ public class Stubs {
         }
       }
       if (!method.isDocOnly()) {
-        writeMethod(stream, method, false);
+        writeMethod(stream, method, false, keepStubComments);
       }
     }
     // Write all methods that are hidden or removed, but override abstract methods or interface methods.
@@ -823,7 +828,7 @@ public class Stubs {
           (overriddenMethod.isAbstract() || overriddenMethod.containingClass().isInterface())) {
         method.setReason("1:" + classContainingMethod.qualifiedName());
         cl.addMethod(method);
-        writeMethod(stream, method, false);
+        writeMethod(stream, method, false, keepStubComments);
       }
     }
 
@@ -835,7 +840,7 @@ public class Stubs {
 
     for (FieldInfo field : cl.selfFields()) {
       if (!field.isDocOnly()) {
-        writeField(stream, field);
+        writeField(stream, field, keepStubComments);
       }
     }
 
@@ -853,7 +858,10 @@ public class Stubs {
     stream.println("}");
   }
 
-  static void writeMethod(PrintStream stream, MethodInfo method, boolean isConstructor) {
+  static void writeMethod(PrintStream stream, MethodInfo method, boolean isConstructor, boolean keepStubComments) {
+    if (keepStubComments) {
+      writeComment(stream, method);
+    }
     String comma;
 
     writeAnnotations(stream, method.annotations(), method.isDeprecated());
@@ -924,7 +932,10 @@ public class Stubs {
     }
   }
 
-  static void writeField(PrintStream stream, FieldInfo field) {
+  static void writeField(PrintStream stream, FieldInfo field, boolean keepStubComments) {
+    if (keepStubComments) {
+      writeComment(stream, field);
+    }
     writeAnnotations(stream, field.annotations(), field.isDeprecated());
 
     stream.print(field.scope() + " ");
@@ -1088,6 +1099,16 @@ public class Stubs {
       stream.print(def.valueString());
     }
     stream.println(";");
+  }
+
+  static void writeComment(PrintStream stream, DocInfo doc) {
+    if (!doc.isHiddenOrRemoved() && !doc.comment().isDocOnly() && !"".equals(doc.getRawCommentText())) {
+      String newLineSeparator = System.getProperty("line.separator");
+      stream.println("/**");
+      stream.print(" * ");
+      stream.println(doc.getRawCommentText().replace(newLineSeparator, newLineSeparator + " *"));
+      stream.println(" */");
+    }
   }
 
   public static void writeXml(PrintStream xmlWriter, Collection<PackageInfo> pkgs, boolean strip) {
