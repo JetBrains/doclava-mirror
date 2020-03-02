@@ -42,16 +42,22 @@ public class CompatInfo {
     public final String definedInClass;
     public final String sourceFile;
     public final int sourceLine;
+    public final boolean disabled;
+    public final boolean loggingOnly;
     public final int enableAfterTargetSdk;
 
+
     CompatChange(String name, long id, String description, String definedInClass,
-        String sourceFile, int sourceLine, int enableAfterTargetSdk) {
+            String sourceFile, int sourceLine, boolean disabled, boolean loggingOnly,
+            int enableAfterTargetSdk) {
       this.name = name;
       this.id = id;
       this.description = description;
       this.definedInClass = definedInClass;
       this.sourceFile = sourceFile;
       this.sourceLine = sourceLine;
+      this.disabled = disabled;
+      this.loggingOnly = loggingOnly;
       this.enableAfterTargetSdk = enableAfterTargetSdk;
     }
 
@@ -62,12 +68,14 @@ public class CompatInfo {
       private String mDefinedInClass;
       private String mSourceFile;
       private int mSourceLine;
+      private boolean mDisabled;
+      private boolean mLoggingOnly;
       private int mEnableAfterTargetSdk;
 
       CompatChange build() {
         return new CompatChange(
             mName, mId, mDescription, mDefinedInClass, mSourceFile, mSourceLine,
-            mEnableAfterTargetSdk);
+                mDisabled, mLoggingOnly, mEnableAfterTargetSdk);
       }
 
       Builder name(String name) {
@@ -106,6 +114,24 @@ public class CompatInfo {
         return this;
       }
 
+      boolean parseBool(String value) {
+        if (value == null) {
+          return false;
+        }
+        boolean result = Boolean.parseBoolean(value);
+        return result;
+      }
+
+      Builder disabled(String disabled) {
+        mDisabled = parseBool(disabled);
+        return this;
+      }
+
+      Builder loggingOnly(String loggingOnly) {
+        mLoggingOnly = parseBool(loggingOnly);
+        return this;
+      }
+
       Builder enableAfterTargetSdk(String enableAfter) throws SAXException {
         if (enableAfter == null) {
           mEnableAfterTargetSdk = 0;
@@ -138,8 +164,10 @@ public class CompatInfo {
           throw new SAXException("<compat-change> id is not a valid long", nfe);
         }
         mCurrentChange.name(attributes.getValue("name"))
-            .description(attributes.getValue("description"))
-            .enableAfterTargetSdk(attributes.getValue("enableAfterTargetSdk"));
+                .description(attributes.getValue("description"))
+                .enableAfterTargetSdk(attributes.getValue("enableAfterTargetSdk"))
+                .disabled(attributes.getValue("disabled"))
+                .loggingOnly(attributes.getValue("loggingOnly"));
 
       } else if (qName.equals("meta-data")) {
         if (mCurrentChange == null) {
@@ -214,6 +242,12 @@ public class CompatInfo {
       if (change.enableAfterTargetSdk != 0) {
         hdf.setValue(path + ".enableAfterTargetSdk",
             Integer.toString(change.enableAfterTargetSdk));
+      }
+      if (change.loggingOnly) {
+        hdf.setValue(path + ".loggingOnly", Boolean.toString(true));
+      }
+      if (change.disabled) {
+        hdf.setValue(path + ".disabled", Boolean.toString(true));
       }
       TagInfo.makeHDF(hdf, path + ".descr", comment.tags());
     }
