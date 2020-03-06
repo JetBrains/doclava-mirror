@@ -16,13 +16,22 @@
 <?cs each:change=change ?>
   <h3 class="api-name" id="<?cs var:change.name ?>"><?cs var:change.name ?></h3>
   <div>Value: <?cs var:change.id ?></div>
-  <!-- TODO: This will do the wrong thing for disabled changes; need to plumb through the
-       disabled flag -->
-  <div>Enabled for <?cs if:change.enableAfterTargetSdk ?>
-      apps with a <code>targetSdkVersion</code> of greater than <?cs var:change.enableAfterTargetSdk ?>.
-    <?cs else ?>
-      all apps.
-    <?cs /if ?>
+  <div>
+  <?cs if:change.loggingOnly ?>
+        Used for logging only.
+  <?cs else ?>
+        <?cs if:change.disabled ?>
+            Disabled for all apps.
+        <?cs else ?>
+            Enabled for
+            <?cs if:change.enableAfterTargetSdk ?>
+                apps with a <code>targetSdkVersion</code> of greater than
+                <?cs var:change.enableAfterTargetSdk ?>.
+            <?cs else ?>
+                all apps.
+            <?cs /if ?>
+        <?cs /if ?>
+  <?cs /if ?>
   </div>
 
   <?cs call:description(change) ?>
