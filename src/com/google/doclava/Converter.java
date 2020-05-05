@@ -501,17 +501,23 @@ public class Converter {
         return result;
       } else {
         ConstructorDoc m = (ConstructorDoc) o;
-        // Workaround for a JavaDoc behavior change introduced in OpenJDK 8 that breaks
-        // links in documentation and the content of API files like current.txt.
-        // http://b/18051133.
         String name = m.name();
-        ClassDoc containingClass = m.containingClass();
-        if (containingClass.containingClass() != null) {
-          // This should detect the new behavior and be bypassed otherwise.
-          if (!name.contains(".")) {
-            // Constructors of inner classes do not contain the name of the enclosing class
-            // with OpenJDK 8. This simulates the old behavior:
-            name = containingClass.name();
+        if (Doclava.SUPPRESS_REFERENCE_ERRORS) {
+          // Workaround for a JavaDoc behavior change introduced in OpenJDK 8 that breaks
+          // links in documentation and the content of API files like current.txt.
+          // http://b/18051133.
+          ClassDoc containingClass = m.containingClass();
+          if (containingClass.containingClass() != null) {
+            // This should detect the new behavior and be bypassed otherwise.
+            String qualName = containingClass.qualifiedName();
+            if (!name.contains(".")
+              && ("androidx.core.app.NotificationCompat.MessagingStyle.Message".equals(qualName)
+                  || "androidx.leanback.widget.GuidedAction.Builder".equals(qualName)
+                  || "androidx.leanback.widget.RowHeaderPresenter.ViewHolder".equals(qualName))) {
+              // Constructors of inner classes do not contain the name of the enclosing class
+              // with OpenJDK 8. This simulates the old behavior:
+              name = containingClass.name();
+            }
           }
         }
         // End of workaround.
