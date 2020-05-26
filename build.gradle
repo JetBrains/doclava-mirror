@@ -121,3 +121,8 @@ task dist(type: Zip, dependsOn: uploadArchives)  {
         logger.lifecycle "Compressed maven artifacts to ${archivePath}"
     }
 }
+
+tasks.withType(JavaCompile) {
+    // Suppress build warnings that we're not interested in: b/154755010
+    options.warnings = false
+}
