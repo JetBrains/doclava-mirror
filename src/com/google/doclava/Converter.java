@@ -511,8 +511,7 @@ public class Converter {
             // This should detect the new behavior and be bypassed otherwise.
             String qualName = containingClass.qualifiedName();
             if (!name.contains(".")
-              && ("androidx.core.app.NotificationCompat.MessagingStyle.Message".equals(qualName)
-                  || "androidx.leanback.widget.GuidedAction.Builder".equals(qualName)
+              && ("androidx.leanback.widget.GuidedAction.Builder".equals(qualName)
                   || "androidx.leanback.widget.RowHeaderPresenter.ViewHolder".equals(qualName))) {
               // Constructors of inner classes do not contain the name of the enclosing class
               // with OpenJDK 8. This simulates the old behavior:
