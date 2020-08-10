@@ -80,8 +80,6 @@ public class Doclava {
   public static boolean USE_DEVSITE_LOCALE_OUTPUT_PATHS = false;
   /* generate navtree.js without other docs */
   public static boolean NAVTREE_ONLY = false;
-  /* Suppress errors in LinkReference.parse (@see/@link) errors. */
-  public static boolean SUPPRESS_REFERENCE_ERRORS = false;
   /* Generate reference navtree.js with all inherited members */
   public static boolean AT_LINKS_NAVTREE = false;
   public static boolean METALAVA_API_SINCE = false;
@@ -408,8 +406,6 @@ public class Doclava {
         manifestFile = a[1];
       } else if (a[0].equals("-compatconfig")) {
         compatConfig = a[1];
-      } else if (a[0].equals("-suppressReferenceErrors")) {
-        SUPPRESS_REFERENCE_ERRORS = true;
       }
     }
 
@@ -972,9 +968,6 @@ public class Doclava {
     }
     if (option.equals("-compatconfig")) {
       return 2;
-    }
-    if (option.equals("-suppressReferenceErrors")) {
-      return 1;
     }
     return 0;
   }
