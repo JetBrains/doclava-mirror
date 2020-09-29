@@ -126,3 +126,8 @@ tasks.withType(JavaCompile) {
     // Suppress build warnings that we're not interested in: b/154755010
     options.warnings = false
 }
+
+tasks.withType(Jar) { task ->
+    task.reproducibleFileOrder = true
+    task.preserveFileTimestamps = false
+}
