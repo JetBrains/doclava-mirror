@@ -1,3 +1,6 @@
 third_party {
-  license_type: NOTICE
+  # would be NOTICE save for:
+  #   templates/
+  #   templates-sdk/
+  license_type: RESTRICTED
 }
