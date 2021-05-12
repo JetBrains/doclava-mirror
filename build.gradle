@@ -47,7 +47,7 @@ dependencies {
         toolsJar = System.env.JAVA_TOOLS_JAR
     } else {
         throw new Exception("If you are not using Java 8, JAVA_TOOLS_JAR env variable " +
-                "needs to be set to build Doclava")
+                "needs to be set to tools.jar from a Java 8 installation to build Doclava")
     }
     implementation(files(toolsJar))
 
