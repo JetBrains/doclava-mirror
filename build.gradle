@@ -45,6 +45,8 @@ dependencies {
         toolsJar = ((URLClassLoader) ToolProvider.getSystemToolClassLoader()).getURLs()
     } else if (System.env.JAVA_TOOLS_JAR != null) {
         toolsJar = System.env.JAVA_TOOLS_JAR
+    } else if (file(buildscript.sourceFile.parent + "/third_party/tools.jar").exists()) {
+        toolsJar = buildscript.sourceFile.parent + "/third_party/tools.jar"
     } else {
         throw new Exception("If you are not using Java 8, JAVA_TOOLS_JAR env variable " +
                 "needs to be set to tools.jar from a Java 8 installation to build Doclava")
